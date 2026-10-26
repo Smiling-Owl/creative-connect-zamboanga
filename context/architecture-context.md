@@ -228,3 +228,27 @@ None. The app makes **no network requests** after loading its own static assets:
 1. Hosting/access method for judges (affects only packaging; static output works anywhere).
 2. Whether a single-file offline fallback build is wanted (decide during feature 09).
 3. Whether cross-tab sync is worth adding (only if two-window presenting is planned).
+
+## Implementation Decisions Recorded 2026-10-26
+
+Recorded after the Feature 01–02 implementation and the first Opus review. Each item is a decision made while building; the team has not yet approved the PROPOSED ones.
+
+| Decision | Status |
+|---|---|
+| TypeScript pinned to 5.9.3 because typescript-eslint does not yet support TypeScript 7 | PROPOSED (revisit when typescript-eslint supports 7) |
+| react-router v8 with `HashRouter` for hash routing, as built | PROPOSED (the stack table lists hash routing as PROPOSED; team to confirm) |
+| Expressing interest is refused when an opportunity is full ("no new interest can be recorded") | PROPOSED |
+| Offers, selections, and confirmations require a published opportunity; recording an outcome does not, so events on closed offers can still be recorded | PROPOSED |
+| One record per creative. A second new record for the same person is refused, and drafts for a second record are refused too | PROPOSED |
+| Verification requires the record to be under review first. Received records are never verified directly | PROPOSED |
+| A duplicate resolved as "linked" keeps both histories, and that record cannot be verified separately. Nothing is merged | PROPOSED |
+| Possible-duplicate heuristic: same display name and area, or the same own-channel contact label. Demo assumption only | OPEN (council rule) |
+| Public-content approval happens at verification or later, whether or not the creative has opted in. A later opt-in lists immediately if content is unchanged | PROPOSED |
+| Coordinator-relayed responses, and coordinator-requested human reviews, are recorded with the coordinator as the relay | PROPOSED |
+| Coordinators can invite an assisted person to claim the existing record (online only). A claim links that record and never creates a second one | PROPOSED |
+| Substantive edits to a verified profile set an update flag. The council approves it or asks for changes with a reason; the record stays verified | PROPOSED |
+| The intake source is derived from the acting user, never supplied by the caller. A coordinator's intake is always attributed to that coordinator and site | PROPOSED (security boundary; team to confirm) |
+| Changes to public content on a verified record (display name, area, practice, skills, public evidence) and to substantive fields set an update for council review. The listing choice does not. A coordinator's follow-up arrangement stays on the record until a coordinator changes it | PROPOSED |
+| Public listing uses a fingerprint of the public fields. Any change to them hides the listing until the council approves the new content | PROPOSED |
+
+Not yet built: sign-up that flags a possible duplicate, and access recovery. Both have no domain code yet and move to Feature 03; this move needs the team's acceptance. The notice and funnel selectors exist; their screens belong to Feature 08.

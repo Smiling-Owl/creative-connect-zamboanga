@@ -1,0 +1,46 @@
+/* Design tokens. Single source for colour, spacing, and shape. Light only: no OS theme dependency. */
+:root {
+  color-scheme: light;
+
+  --color-bg: #faf8f5;
+  --color-surface: #ffffff;
+  --color-ink: #1f2328;
+  --color-ink-muted: #565e67;
+  --color-border: #8a939c;
+  --color-divider: #d9dde2;
+  --color-accent: #0f5c6e;
+  --color-accent-ink: #ffffff;
+  --color-focus: #b4530a;
+  --color-demo: #5a4bb0;
+
+  --tone-info-bg: #e6f0fb;
+  --tone-info-ink: #1c4f8a;
+  --tone-success-bg: #e7f4ea;
+  --tone-success-ink: #1e6b34;
+  --tone-warning-bg: #fdf1dc;
+  --tone-warning-ink: #7a4a00;
+  --tone-danger-bg: #fbe7e7;
+  --tone-danger-ink: #8a1f1f;
+  --tone-neutral-bg: #eceef1;
+  --tone-neutral-ink: #3d4550;
+
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius: 6px;
+  --tap-min: 44px;
+  --content-max: 42rem;
+}
