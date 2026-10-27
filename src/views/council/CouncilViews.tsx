@@ -3,14 +3,15 @@ import { Link, useParams, useSearchParams } from 'react-router';
 import { PublicProfileCard } from '../../components/PublicProfileCard';
 import { focusProfileField, ProfileFieldsEditor } from '../../components/ProfileFieldsEditor';
 import { Button, Notice, StatusBadge } from '../../components/ui';
-import { APPLICATION_LABEL, LISTING_LABEL, UPDATE_PENDING_LABEL } from '../../labels';
+import { APPLICATION_LABEL, LISTING_LABEL, linkedDuplicateNote, UPDATE_PENDING_LABEL } from '../../labels';
 import { approveApplication, declineApplication, editProfile, intakeValidationErrors, requestChanges, requestPublicContentChanges, resolveDuplicate, resolveUpdate, startReview } from '../../domain/application';
 import { openCase, resolveCase } from '../../domain/cases';
-import { councilCases, councilQueue, creativeView } from '../../domain/selectors';
+import { councilCases, councilQueue, creativeView, isOverdue, latestReceiptAt, linkedDuplicateCount } from '../../domain/selectors';
 import { projectPublicIntake } from '../../domain/publicProfile';
 import { approvePublicContent, listingStatus, setListing } from '../../domain/visibility';
 import type { CaseKind, IntakeFields } from '../../domain/types';
 import { demoTime, useDemo } from '../../state/store';
+import { CouncilOverviewPanel } from './CouncilOverviewPanel';
 
 type QueueTab = 'new' | 'resubmitted' | 'under_review' | 'cases' | 'records';
 const TABS: { id: QueueTab; label: string }[] = [
@@ -36,18 +37,20 @@ function CouncilQueue() {
     return haystack.includes(query.trim().toLowerCase());
   }), [records, query]);
   return <div className="public-stack">
+    <CouncilOverviewPanel />
     <section className="public-card">
       <p>Only records received by the council appear here. Local drafts and coordinator queues are not council submissions.</p>
       <nav aria-label="Council record queues" className="action-row">
         {TABS.map((item) => <Button key={item.id} variant={tab === item.id ? 'primary' : 'secondary'} aria-pressed={tab === item.id} onClick={() => setParams(item.id === 'new' ? {} : { tab: item.id })}>{item.label}</Button>)}
       </nav>
       <label className="field-inline">Search reference, display name, or intake source<input value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+      {tab === 'records' ? <p className="muted">{linkedDuplicateNote(linkedDuplicateCount(state.data))}</p> : null}
     </section>
     {tab === 'cases' ? <section className="public-card"><h2>Open cases</h2>{cases.length ? <ul className="record-list">{cases.map((item) => {
       const record = state.data.records.find((entry) => entry.id === item.recordId);
       const referral = item.referralId ? state.data.referrals.find((entry) => entry.id === item.referralId) : null;
       return <li key={item.id}><strong>{caseLabel(item.kind)}</strong> · {record?.intake.displayName} · {record?.application.reference}<p>{item.reason}</p>{item.kind === 'outcome_correction' && referral ? <Link to={`/council/referrals/${referral.opportunityId}`}>Review outcome request</Link> : <Link to={`/council/applications/${item.recordId}`}>Open record and case</Link>}</li>;
-    })}</ul> : <p>No open cases.</p>}</section> : <section className="public-card"><h2>{TABS.find((item) => item.id === tab)?.label} · {filtered.length}</h2>{filtered.length ? <ul className="record-list">{filtered.map((record) => { const age = Math.max(0, Math.floor((Date.parse(demoTime(state.clock)) - Date.parse(record.application.receivedAt)) / 86_400_000)); return <li key={record.id}><Link to={`/council/applications/${record.id}`}><strong>{record.application.reference}</strong> · {record.intake.displayName}</Link><p>{APPLICATION_LABEL[record.application.state].label} · {age} demo days · {record.source.mode === 'assisted' ? 'Coordinator-assisted' : 'Self-service'}{record.source.siteId ? ` · ${state.data.sites.find((site) => site.id === record.source.siteId)?.name ?? record.source.siteId}` : ''}{record.application.version > 1 ? ` · Version ${record.application.version}` : ''}{age > 5 ? ' · Overdue review (5-day demo assumption)' : ''}</p>{record.application.duplicate?.status === 'open' ? <StatusBadge label="Possible duplicate" tone="warning" /> : null}{record.application.updatePending ? <StatusBadge label={UPDATE_PENDING_LABEL.label} tone="warning" /> : null}</li>; })}</ul> : <p>No received records match this queue.</p>}</section>}
+    })}</ul> : <p>No open cases.</p>}</section> : <section className="public-card"><h2>{TABS.find((item) => item.id === tab)?.label} · {filtered.length}</h2>{filtered.length ? <ul className="record-list">{filtered.map((record) => { const age = Math.max(0, Math.floor((Date.parse(demoTime(state.clock)) - Date.parse(latestReceiptAt(state.data, record))) / 86_400_000)); return <li key={record.id}><Link to={`/council/applications/${record.id}`}><strong>{record.application.reference}</strong> · {record.intake.displayName}</Link><p>{APPLICATION_LABEL[record.application.state].label} · {age} demo days since latest receipt · {record.source.mode === 'assisted' ? 'Coordinator-assisted' : 'Self-service'}{record.source.siteId ? ` · ${state.data.sites.find((site) => site.id === record.source.siteId)?.name ?? record.source.siteId}` : ''}{record.application.version > 1 ? ` · Version ${record.application.version}` : ''}{isOverdue(state.data, record, demoTime(state.clock)) ? ' · Overdue review (5-day demo assumption)' : ''}</p>{record.application.duplicate?.status === 'open' ? <StatusBadge label="Possible duplicate" tone="warning" /> : null}{record.application.updatePending ? <StatusBadge label={UPDATE_PENDING_LABEL.label} tone="warning" /> : null}</li>; })}</ul> : <p>No received records match this queue.</p>}</section>}
   </div>;
 }
 

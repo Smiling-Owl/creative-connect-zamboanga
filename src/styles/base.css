@@ -632,3 +632,67 @@ textarea {
     margin-bottom: var(--space-2);
   }
 }
+
+/* Council overview (Feature 08). Tables wrap text; no horizontal scroll at 320px. */
+.synthetic-label {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--color-demo);
+  border-radius: var(--radius);
+}
+
+.overview-panel > p {
+  margin: var(--space-3) 0 0;
+}
+
+.overview-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: var(--space-4);
+}
+
+.overview-block {
+  min-width: 0;
+}
+
+.overview-block h3 {
+  margin-bottom: var(--space-2);
+}
+
+.overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.overview-table caption {
+  text-align: left;
+  color: var(--color-ink-muted);
+  padding-bottom: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.overview-table th,
+.overview-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+  overflow-wrap: break-word;
+}
+
+.overview-table thead th {
+  font-weight: 600;
+}
+
+.device-count {
+  color: var(--color-ink-muted);
+}
+
+@media (min-width: 900px) {
+  .overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

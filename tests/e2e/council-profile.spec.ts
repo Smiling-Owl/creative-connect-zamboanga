@@ -90,7 +90,7 @@ test('creative profile edits keep membership and hide changed public content unt
   expect(withdrawn.state.data.cases.some((item: { recordId: string; kind: string; state: string }) => item.recordId === 'rec-noel' && item.kind === 'withdrawal' && item.state === 'open')).toBe(true);
   await choosePersona(page, 'Council administrator (fictional)');
   await page.goto('./#/council?tab=cases');
-  await page.locator('a[href="#/council/applications/rec-noel"]').click();
+  await page.getByRole('link', { name: 'Open record and case' }).and(page.locator('a[href="#/council/applications/rec-noel"]')).click();
   await page.getByLabel('Resolution note').fill('Withdrawal recorded. No information was deleted.');
   await page.getByRole('button', { name: 'Resolve case' }).click();
   await choosePersona(page, 'Noel (fictional filmmaker, verified)');

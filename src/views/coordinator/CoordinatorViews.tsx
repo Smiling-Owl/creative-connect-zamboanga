@@ -10,7 +10,8 @@ import { resolveConflict, syncQueue } from '../../domain/queue';
 import { respondToOffer } from '../../domain/referral';
 import type { IntakeFields, QueueItem } from '../../domain/types';
 import { focusProfileField, ProfileFieldsEditor } from '../../components/ProfileFieldsEditor';
-import { APPLICATION_LABEL, REFERRAL_LABEL, TRANSFER_LABEL } from '../../labels';
+import { APPLICATION_LABEL, DEVICE_NOT_RECEIVED_LABEL, REFERRAL_LABEL, TRANSFER_LABEL } from '../../labels';
+import { NotificationList } from '../../components/NotificationList';
 import { useDemo } from '../../state/store';
 
 export function CoordinatorView({ id }: { id: 'F01' | 'F02' }) {
@@ -125,6 +126,7 @@ function Workspace() {
     </div>
 
     <section className="public-card" aria-labelledby="device-queue-title"><div className="coordinator-section-heading"><div><h2 id="device-queue-title">Device queue</h2><p>Waiting, sending, failed and received items on this coordinator device.</p></div><Button disabled={!state.settings.online || sendingId !== null || !workspace.queue.some((item) => item.status === 'waiting')} onClick={() => sendNext(undefined, true)}>Sync now</Button></div>
+      <p className="device-count"><strong>{workspace.notReceived}</strong> {workspace.notReceived === 1 ? 'item' : 'items'} {DEVICE_NOT_RECEIVED_LABEL}. Only this device lists them; council totals do not include them.</p>
       {feedback ? <p role="status" aria-live="polite">{feedback}</p> : null}
       {workspace.queue.length ? <div className="queue-list">{[...workspace.queue].sort((a, b) => a.queuedAt.localeCompare(b.queuedAt)).map((item) => <QueueCard key={item.id} item={item} sending={item.id === sendingId} online={state.settings.online} onRetry={() => sendNext(item.id)} onConflict={(action) => {
         const result = run((data, ctx) => resolveConflict(data, ctx, { itemId: item.id, action }));
@@ -135,7 +137,7 @@ function Workspace() {
     </section>
 
     <section className="public-card" id="coordinator-followups" aria-labelledby="followups-title"><h2 id="followups-title">Assigned follow-ups</h2>{location.search.includes('tab=followups') ? <p>Showing assigned records with coordinator-mediated follow-up or an offer awaiting response.</p> : <p>Follow-up tasks for records assigned to this site.</p>}{followupRecords.length ? <ul className="coordinator-record-list">{followupRecords.map((record) => <li key={record.id}><Link to={`/coordinator/records/${record.id}`}>{record.intake.displayName}</Link><span>{record.intake.followUp.kind === 'coordinator_mediated' ? 'Coordinator-mediated' : 'Offer awaiting response'}</span></li>)}</ul> : <p>No assigned follow-ups.</p>}</section>
-    <section className="public-card"><h2>Coordinator notifications</h2><p>In-app examples — no SMS or email is sent.</p>{notices.length ? <ul className="notification-list">{notices.map((item) => <li key={item.id}><span>{item.text}</span><time>{item.at.slice(0, 10)}</time></li>)}</ul> : <p>No notifications yet.</p>}</section>
+    <NotificationList notices={notices} />
   </div>;
 }
 

@@ -266,7 +266,7 @@ test('coordinator withdrawal requires consent, immediately unlists, and appears 
   await expect(page.getByRole('heading', { name: 'Requests on this record' })).toBeVisible();
   await choosePersona(page, 'Council administrator (fictional)');
   await page.goto('./#/council?tab=cases');
-  await page.locator('a[href="#/council/applications/rec-dani"]').click();
+  await page.getByRole('link', { name: 'Open record and case' }).and(page.locator('a[href="#/council/applications/rec-dani"]')).click();
   await page.getByLabel('Resolution note').fill('Withdrawal recorded; no information was deleted.');
   await page.getByRole('button', { name: 'Resolve case' }).click();
   await choosePersona(page, 'Coordinator — Demo Site B');

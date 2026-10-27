@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { OpportunityDetail } from '../public/PublicViews';
+import { NotificationList } from '../../components/NotificationList';
 import { AccessDenied, Button, Notice, StatusBadge } from '../../components/ui';
 import { openCase } from '../../domain/cases';
 import { respondToOffer, withdrawReferral } from '../../domain/referral';
@@ -28,7 +29,7 @@ function CreativeReferrals({ referralId }: { referralId: string }) {
   const notices = noticesFor(state.data, actor);
   if (!referralId) return <div className="public-stack">
     <section className="public-card"><h2>My opportunities and referrals</h2><p>Interest, an offer, acceptance, and confirmation are separate steps. A referral does not guarantee a place or paid work.</p></section>
-    {notices.length ? <section className="public-card"><h2>Recent in-app updates</h2><ul className="timeline-list">{notices.map((item) => <li key={item.id}><time>{item.at.slice(0, 10)}</time><p>{item.text}</p></li>)}</ul></section> : null}
+    {notices.length ? <NotificationList notices={notices} title="Recent updates" /> : null}
     {referrals.length ? <ul className="card-list">{referrals.map((referral) => {
       const opportunity = state.data.opportunities.find((item) => item.id === referral.opportunityId);
       return <li className="public-card" key={referral.id}><p>{referral.origin === 'interest' ? 'Your interest' : 'Council invitation'} · {opportunity?.title ?? 'Opportunity'}</p><StatusBadge label={REFERRAL_LABEL[referral.state].label} tone={REFERRAL_LABEL[referral.state].tone} /><p>{referral.reason ?? (referral.state === 'accepted' ? 'Waiting for the council to confirm availability and arrangements.' : '')}</p><Link to={`/me/referrals/${referral.id}`}>Open referral details</Link></li>;

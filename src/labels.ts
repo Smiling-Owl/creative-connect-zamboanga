@@ -67,3 +67,78 @@ export const ROLE_LABEL: Record<Role, string> = {
   coordinator: 'Community coordinator',
   council: 'Council administrator',
 };
+
+// Council overview (Feature 08). Every figure is synthetic and states its denominator and window.
+export const SYNTHETIC_DATA_LABEL = 'Synthetic demo data — not real results';
+export const NOTIFICATION_LABEL = 'In-app example — no SMS or email is sent';
+export const NOT_RECEIVED_NOTE = 'Device-only starts and submissions are not yet received by the council. They are excluded from every figure on this panel.';
+export const NOT_EVIDENCE_NOTE = 'These figures describe council records and referral steps only. They are not evidence of impact, income, or paid work.';
+export const FUNNEL_NOTE = 'Each stage counts referrals that reached it at any point in the recorded history. Moving on to a later step does not remove an earlier stage. Current totals are shown separately above.';
+export const DEVICE_NOT_RECEIVED_LABEL = 'on devices, not received';
+export const SINCE_DEMO_START = 'since demo start';
+export const NO_RECORDS_YET = 'no records yet';
+export const NO_REFERRALS_YET = 'no referrals yet';
+export const NO_OPPORTUNITIES_YET = 'no opportunities yet';
+
+export const SOURCE_LABEL: Record<'assisted' | 'self_service', string> = {
+  assisted: 'Coordinator-assisted',
+  self_service: 'Self-service',
+};
+export const SELF_SERVICE_SITE_LABEL = 'Self-service (no site)';
+
+// Council-aggregate wording. Used only in council overview figures, and only where the canonical label
+// (APPLICATION_LABEL / REFERRAL_LABEL) is written to the creative ("you", "please respond"). All other states
+// use the canonical labels above, so each state reads the same in every role view.
+export const COUNCIL_AGGREGATE_LABEL = {
+  applicationDeclined: 'Declined — see reason',
+  referralOffered: 'Place offered — awaiting creative response',
+  referralDeclined: 'Offer declined by creative',
+} as const;
+
+/** Label for a received-application state in council aggregate figures. */
+export function councilApplicationLabel(state: ApplicationState): string {
+  return state === 'declined' ? COUNCIL_AGGREGATE_LABEL.applicationDeclined : APPLICATION_LABEL[state].label;
+}
+
+/** Label for a referral state in council aggregate figures. */
+export function councilReferralLabel(state: ReferralState): string {
+  if (state === 'offered') return COUNCIL_AGGREGATE_LABEL.referralOffered;
+  if (state === 'declined') return COUNCIL_AGGREGATE_LABEL.referralDeclined;
+  return REFERRAL_LABEL[state].label;
+}
+
+/** "Includes N linked duplicate records" note for the records list, so it reconciles with the overview. */
+export function linkedDuplicateNote(count: number): string {
+  const n = Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
+  return `Includes ${n} linked duplicate record${n === 1 ? '' : 's'}. Linked duplicates keep their own history and are excluded from the record totals on the overview.`;
+}
+
+export const FUNNEL_STAGE_LABEL = {
+  initiated: 'Interest or invitation started',
+  offered: 'Offered a place',
+  accepted: 'Accepted the offer',
+  confirmed: 'Place confirmed',
+  attended: 'Attended or completed',
+} as const;
+
+export const PENDING_LABEL = {
+  new: 'New applications',
+  resubmitted: 'Resubmitted applications',
+  underReview: 'Under council review',
+  profileUpdates: 'Profile updates waiting for review',
+  openCases: 'Open cases',
+  overdue: 'Overdue: 5 or more demo days waiting for a first decision',
+} as const;
+
+export const OVERVIEW_SECTION_LABEL = {
+  pending: 'Pending reviews',
+  recordsByStatus: 'Records by status',
+  listing: 'Listed and private verified members',
+  opportunities: 'Opportunities by state',
+  currentReferrals: 'Current referrals by state',
+  cumulativeFunnel: 'Referral funnel, cumulative',
+  exceptions: 'Referral exceptions',
+  siteCoverage: 'Coverage by site',
+  sourceCoverage: 'Coverage by intake source',
+  activity: 'Recent activity and notifications',
+} as const;

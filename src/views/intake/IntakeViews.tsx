@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { PublicProfileCard } from '../../components/PublicProfileCard';
+import { NotificationList } from '../../components/NotificationList';
 import { Button, Notice, StatusBadge } from '../../components/ui';
 import { enqueueSubmission, intakeValidationErrors, submitIntake } from '../../domain/application';
 import { openCase } from '../../domain/cases';
@@ -334,5 +335,5 @@ function CreativeHome() {
     {record.application.state === 'declined' ? <section className="public-card"><h2>Request a human review</h2>{openHumanReview ? <Notice tone="info">Your request is waiting for the council: {openHumanReview.reason}</Notice> : requesting ? <><label className="field-inline">Why should a person review this decision?<textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} /></label><div className="action-row"><Button variant="secondary" onClick={() => setRequesting(false)}>Cancel</Button><Button disabled={!reason.trim()} onClick={submitReviewRequest}>Send human-review request</Button></div></> : <><p>You can ask for a person to review the decision. Add a short reason.</p><Button variant="secondary" onClick={() => setRequesting(true)}>Request a human review</Button></>}</section> : null}
     <section className="public-card"><h2>Application timeline</h2>{timeline.length ? <ol className="timeline-list">{timeline.map((event) => <li key={event.id}><strong>{events[event.action] ?? 'Application updated'}</strong><span>{event.at.slice(0, 10)}</span>{event.reason ? <p>{event.reason}</p> : null}</li>)}</ol> : <p>No timeline events are available.</p>}</section>
     <section className="public-card"><h2>Need help?</h2><p>In-app examples are for this demo only. No text or email is sent.</p><Link to="/access?mode=help">Get assistance with registration</Link></section>
-    <section className="public-card"><h2>In-app notification examples</h2><p>These are examples in this browser demo. No SMS or email is sent.</p>{noticeList.length ? <ul>{noticeList.map((notice) => <li key={notice.id}>{notice.at.slice(0, 10)} — {notice.text}</li>)}</ul> : <p>No notification examples yet.</p>}</section>{message ? <p role="status">{message}</p> : null}</div>;
+    <NotificationList notices={noticeList} />{message ? <p role="status">{message}</p> : null}</div>;
 }
