@@ -1,91 +1,97 @@
 # Progress Tracker
 
-Last updated: 2026-10-26.
+Last updated: 2026-10-27.
 
 ## Current Phase
 
-Implementation, feature by feature. Features 01 and 02 are built and verified locally, and are in review. Nothing beyond the planning baseline is committed yet.
+Feature 03 implemented, reviewed, and verified. Foundation/domain work is already committed; previous text claiming it was uncommitted was stale. The full MVP is not complete.
 
 ## Current Goal
 
-Finish review of Features 01 and 02 and commit them. Then start Feature 03 (public discovery, guidance, and simulated access). Feature 03 builds on the store and selectors that now exist.
+Integrate and publish the verified iteration. Next implementation scope is Feature 04: shared intake, privacy choices, and application status.
 
 ## Milestones
 
 | # | Milestone / feature spec | Status | Notes |
 |---|---|---|---|
-| 0 | Planning and project context (`AGENTS.md`, `context/`) | DONE | Committed on `feature/foundation-and-domain` as the baseline. The user approved proceeding on 2026-10-26. |
-| 01 | Foundation and demo shell | REVIEW (committed to feature/foundation-and-domain) | Scripts, shell, routes, role gates, demo controls, persistence. 12 browser tests pass. Reviewed once (Opus); findings fixed; re-review pending. |
-| 02 | Domain state, permissions, and fixtures | REVIEW (committed to feature/foundation-and-domain) | Rules, permissions, fixtures, selectors, account links, and guidance fixtures are built. 116 unit tests pass. Reviewed once (Opus); findings fixed; re-review pending. Deferred to Feature 03 and Feature 08: sign-up duplicate flag, access recovery, notifications view, funnel view. |
-| 03 | Public discovery, guidance, and simulated access | NOT STARTED | Next. |
-| 04 | Shared intake, privacy choices, and application status | NOT STARTED | Domain for intake exists. Screens do not. |
-| 05 | Coordinator workspace and offline simulation | NOT STARTED | Queue rules exist. Screens do not. |
-| 06 | Council review, corrections, and profile maintenance | NOT STARTED | Review rules exist. Screens do not. |
-| 07 | Opportunities, referrals, and outcomes | NOT STARTED | Rules exist. Screens do not. |
-| 08 | Council overview, synthetic reporting, and notifications | NOT STARTED | Selectors exist. Screens do not. |
-| 09 | Verification, demo script, and packaging | NOT STARTED | |
+| 0 | Planning and project context | DONE | Baseline commit 8f6aa3c. |
+| 01 | Foundation and demo shell | DONE, accepted gaps below | Existing commit 1dc8db3; Sol Senior re-reviewed the foundation. |
+| 02 | Domain state, permissions, fixtures | DONE, accepted gaps below | Existing commit 1dc8db3; deadline checks extended in 03. |
+| 03 | Public discovery, guidance, simulated access | DONE at Feature 03 scope | Code commit e860df9; P01-P06/A01-A02 implemented. Post-intake return depends on 04. |
+| 04 | Shared intake, privacy, application status | NEXT | Draft/domain support exists; screens remain placeholders. |
+| 05 | Coordinator workspace/offline simulation | NOT STARTED | Queue rules exist; screens do not. |
+| 06 | Council review/corrections/profile maintenance | NOT STARTED | Rules exist; screens do not. |
+| 07 | Opportunities/referrals/outcomes | NOT STARTED | P05 can express interest; full role workflows remain unbuilt. |
+| 08 | Council overview/reporting/notifications | NOT STARTED | Existing selectors; screens unbuilt. |
+| 09 | Full-journey verification/demo packaging | NOT STARTED | README added; complete demo script/journeys depend on 04-08. |
 
-Dependency order: 01 → 02 → {03, 04, 07} in parallel → {05, 06} → 08 → 09.
+Dependency order: 01 -> 02 -> {03, 04, 07} -> {05, 06} -> 08 -> 09.
 
-## Completed
+## Completed This Iteration
 
-- Source review of the client brief, the transcript, the synthesized notes, the concept and journey document, the MVP flows, and the project bootstrap (in the research workspace, outside this repository).
-- Team decisions recorded 2026-10-23: Vite + React + TypeScript, an in-memory store mirrored to localStorage with Reset, and context kept in this repository.
-- Feature 01: project scaffold (pinned dependencies, scripts), design tokens, shell, 20 view routes with role gates, demo controls, versioned persistence with fallback, reset with confirmation.
-- Feature 02: domain layer (see `architecture-context.md` → Implementation Decisions), fixtures, personas, guidance examples, selectors, and a permission representation.
-- First Opus review (2026-10-26): CHANGES NEEDED. One blocker and about a dozen major or minor findings. Fixed: account links, update review path, duplicate linked handling, closed-opportunity rule, one record per creative, source derived from the actor, sync-failure consumption, review order, duplicate contact-label check, conflict baseline, status vocabulary wording, the dialog focus trap, and the network test.
+- Welcome, directory/profile, opportunity list/detail, neutral-source guidance, all simulated access/recovery variants.
+- Practice/skill/area/text filters over the public projection; private and unknown profile IDs share the same unavailable response.
+- Draft opportunities hidden; truthful full/closed/cancelled/expired availability; existing referral status retained; unverified existing members linked to application status.
+- Deterministic deadline checks for new interest, invitations, and offers, including deadline-day boundary tests.
+- Sign-up persists fictional contact and updates the self-service draft. Existing receipt-time assisted-contact matching is covered by a regression test.
+- Invitation claim links the existing Dani fixture without creating another record. Recovery and staff access remain simulated.
+- Bounded origin to known public opportunity routes; persisted it and displayed it on the honest intake placeholder.
+- Schema version 2 access state in the existing localStorage envelope; older state resets with the compatibility notice.
+- Exported OpportunityDetail; improved narrow-screen facts layout and query-mode focus.
+- Public/access e2e, axe/320px checks, and closed-past-deadline regression. Optional PLAYWRIGHT_PORT avoids stopping an unrelated server.
+- README/run instructions and reconciled architecture/code-standards notes.
 
-## In Progress
+## Review and Routing
 
-- Opus re-review of Features 01 and 02 after the fixes above.
+The user requested "6.1 Luna" implementation and Sol SS verification. That exact Luna model was unavailable. Root disclosed and used the exposed gpt-6-luna implementer with independent sol_senior verification. Work was isolated on feature/public-discovery-access. Root owns integration, documentation, and publication.
 
-## Blocked
+Sol Senior approved Feature 03 after repairs for deadlines, skill filters, availability, referral visibility, bounded return paths, direct expired-link recovery, and focus. A final closed-status precedence correction was reproduced with a failing browser regression, fixed, and included in the green 17-test run.
 
-None.
+TDD evidence: deadline and exact-skill tests were observed red before fixes; access persistence was exercised during implementation. Duplicate-contact regression passed immediately because matching already existed. Initial view code preceded integration e2e; do not claim every UI change was written test-first.
 
-## Known gaps accepted for now
+## Verification - 2026-10-27
 
-- Navigation lacks the "Follow-ups" (coordinator) and "Creative records" (council) destinations. They arrive with Features 05 and 08. Adding them now would point at placeholder pages.
-- No `EmptyState` or `LinkButton` components. Add them when a view needs them.
-- Store `run` has no unit test. It is covered indirectly by the browser tests.
-- The shell has no separate "menu button" below 640 px. Navigation wraps instead.
-- The demo does not yet have the "Next send fails" end-to-end journey. That arrives with Feature 05.
-- Feature 02 was implemented before its tests were written. Feature 03 onward is test-first.
-- Minor, from the final Opus check: (1) any creative edit clears updateReason, even one that changes nothing the council reviews, such as interests. (2) If a creative edits a pending update back to the approved content, updatePending stays true, so a council review item remains after the listing is back. (3) Tests not yet covering: refusal of a non-confirmed referral in recordInstructions, and updateReason clearing on approval.
+Verified code commit: e860df93fb8dda2e42f611d6f9c29ee0f1a1e16a. This tracker update is documentation-only after that commit.
 
-## Next
+| Check | Result |
+|---|---|
+| npm ci --no-audit --no-fund | PASS; 237 locked packages, fresh worktree |
+| npm run typecheck | PASS |
+| npm run lint | PASS, including after final correction |
+| npm test | PASS; 121 tests in 14 files |
+| npm run build | PASS; rebuilt by final browser suite; about 96 KB gzipped JS |
+| PLAYWRIGHT_PORT=4187 npm run test:e2e | PASS; 17 tests, including final status regression |
+| Axe / responsive browser checks | No serious/critical violations across 16 public/access route variants at 320px |
+| Desktop/mobile screenshots | Five public/access views inspected at 1280/320px; mobile opportunity layout corrected/rechecked |
+| Browser exception check | PASS on inspected views |
+| Keyboard | Skip-link keyboard activation, route h1 and access-mode focus checked; not a full assistive-tech audit |
+| External request smoke | PASS; no requests outside prototype origin |
+| git diff --check | PASS |
+| npm run dev | Started/used for screenshot checks on port 4175 |
 
-1. Opus re-review of the fixes. Address any remaining blocker or major finding.
-2. Commit Features 01 and 02 on `feature/foundation-and-domain`, with the Haiku co-author line.
-3. Feature 03 (Haiku implements; Opus reviews before commit).
+First browser run: two test-setup failures. Assistance was attempted without switching back from the newly signed-in creative to Guest. The old skip test assumed first Tab starts before the header despite intentional h1 focus. Both were diagnosed and repaired. Port 4173 was occupied; final checks used 4187 without killing unrelated processes. No failing required check remains.
 
-## Integration State
+## Remaining Boundaries and Accepted Gaps
 
-Nothing merged. The branch `feature/foundation-and-domain` holds the context baseline commit. Features 01 and 02 are uncommitted in the working tree.
+- Actual intake, creative/council workspaces and Features 04-08 remain explicit placeholders. Full main/alternate demo stories are not complete.
+- Origin survives access/reload and is shown at intake. Actual submission/post-submission return requires Feature 04.
+- No production backend/auth, real credentials/messages, official endorsement, live integrations, or personal-data collection.
+- No site deployment/hosting resource; GitHub is source hosting only.
+- Mobile navigation still wraps rather than using a menu button, as previously accepted.
+- Coordinator Follow-ups and council Creative records navigation arrive later.
+- Store run has browser coverage rather than a dedicated unit suite.
+- Previously accepted domain minors remain: creative edits can clear updateReason; reverting pending content can leave updatePending; explicit tests for non-confirmed recordInstructions refusal and updateReason clearing on approval remain absent. Not broadened into this iteration.
+- Manual screen-reader testing, complete 200% zoom coverage, every future role view's keyboard audit, and full no-network main-story testing remain for Feature 09.
+- Guidance sources and real contact route unconfirmed; neutral examples/placeholders remain.
 
-## Verification State
+## Repository / Integration
 
-- Last verified commit: `8f6aa3c` (context baseline; no application code).
-- Current working tree, verified in this session on 2026-10-26:
-  - `npm run typecheck`: exit 0
-  - `npm run lint`: exit 0
-  - `npm test`: 116 passed (14 files)
-  - `npm run build`: exit 0, about 88 KB gzipped JS
-  - `npm run test:e2e`: 12 passed (Chromium)
-- Not yet checked: `npm ci` from a clean clone; manual screen-reader pass; 200% zoom; keyboard-only pass of every view; `npm run dev`.
+Private source repository created for this application: https://github.com/Smiling-Owl/creative-connect-zamboanga . The existing public Smiling-Owl/hermosa contains research and is separate.
 
-## Open Questions
-
-Full list in `project-overview.md` → Open Questions. The most time-sensitive:
-
-- Event date, demo length, and organizer requirements. These set the calendar for the remaining days.
-- Team size, skills, and feature ownership.
-- How judges will open the demo (needed by Day 7; a local fallback is required regardless).
-- Whether guidance cards may name or link real government offices. Current cards use source labels only.
-- Whether a deck or video is also required. Not added automatically.
-
-Decisions made while building that need the team's OK are listed under "Implementation Decisions Recorded" in `architecture-context.md`.
+Existing Git history is preserved. Integration targets main in E:/dev-work/hermosa; inspect git status and git remote -v for local/remote synchronization. Workers do not merge/push/deploy; root owns those actions.
 
 ## Next Recommended Action
 
-Finish the Opus re-review, then commit Features 01 and 02 and start Feature 03.
+Implement context/feature-specs/04-intake-and-application-status.md, reusing draft rules, privacy choices, access context and the pending opportunity ID. Verify self-service/assisted boundaries. Do not describe the current iteration as a finished MVP.
+
+Open questions: exact event date/demo duration, team ownership, judge hosting/access, approved guidance/contact routes, and whether a deck/video is required. These do not block the fictional prototype.
