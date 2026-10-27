@@ -5,6 +5,7 @@ import { closeOpportunity } from './opportunity';
 import { saveDraft } from './drafts';
 import { syncQueue } from './queue';
 import { listingStatus } from './visibility';
+import { openCase, resolveCase } from './cases';
 import { ctxFor, fresh } from '../test/helpers';
 import type { DomainData, IntakeFields } from './types';
 
@@ -41,6 +42,50 @@ describe('public-field edits on a verified profile go to council review', () => 
     const again = data.records.find((r) => r.id === 'rec-noel')!;
     data = step(editProfile(data, ctxFor('noel'), { recordId: 'rec-noel', fields: { ...again.intake, skills: ['Editing', 'Grading', 'Colour'] } })).data;
     expect(data.records.find((r) => r.id === 'rec-noel')!.application.updateReason).toBeNull();
+  });
+
+  it('non-public edits preserve an outstanding public-content change reason', () => {
+    let data: DomainData = fresh();
+    const noel = data.records.find((r) => r.id === 'rec-noel')!;
+    data = step(editProfile(data, ctxFor('noel'), { recordId: noel.id, fields: { ...noel.intake, practice: 'Animation' } })).data;
+    data = step(resolveUpdate(data, ctxFor('council'), { recordId: noel.id, decision: 'request_changes', reason: 'Choose a different public sample.' })).data;
+    const requested = data.records.find((r) => r.id === noel.id)!;
+    data = step(editProfile(data, ctxFor('noel'), { recordId: noel.id, fields: { ...requested.intake, interests: ['Mentoring'] } })).data;
+    expect(data.records.find((r) => r.id === noel.id)!.application.updateReason).toBe('Choose a different public sample.');
+    expect(data.records.find((r) => r.id === noel.id)!.application.updatePending).toBe(true);
+  });
+});
+
+describe('withdrawal requests', () => {
+  it('unlists immediately, records the request, and keeps the opted-out state after council disposition', () => {
+    const requested = step(openCase(fresh(), ctxFor('noel'), { kind: 'withdrawal', recordId: 'rec-noel', reason: 'Please remove my public listing.' }));
+    expect(requested.data.records.find((r) => r.id === 'rec-noel')!.optedIn).toBe(false);
+    expect(listingStatus(requested.data.records.find((r) => r.id === 'rec-noel')!)).toBe('not_listed');
+    expect(requested.data.audit.some((event) => event.entityId === 'rec-noel' && event.action === 'withdrawal_requested')).toBe(true);
+    const resolved = step(resolveCase(requested.data, ctxFor('council'), { caseId: requested.id!, resolution: 'Withdrawal noted; no information was deleted.' }));
+    expect(resolved.data.records.find((r) => r.id === 'rec-noel')!.optedIn).toBe(false);
+    expect(listingStatus(resolved.data.records.find((r) => r.id === 'rec-noel')!)).toBe('not_listed');
+  });
+
+  it('lets an assigned coordinator open a withdrawal only online with explicit agreement', () => {
+    const data = fresh();
+    expect(openCase(data, ctxFor('coord-a'), { kind: 'withdrawal', recordId: 'rec-rhea', reason: 'The person asked to withdraw (fictional).', personAgreed: false })).toMatchObject({ ok: false, code: 'consent_required' });
+    expect(openCase(data, ctxFor('coord-a', { online: false }), { kind: 'withdrawal', recordId: 'rec-rhea', reason: 'The person asked to withdraw (fictional).', personAgreed: true })).toMatchObject({ ok: false, code: 'offline' });
+    expect(openCase(data, ctxFor('coord-b'), { kind: 'withdrawal', recordId: 'rec-rhea', reason: 'The person asked to withdraw (fictional).', personAgreed: true })).toMatchObject({ ok: false, code: 'forbidden' });
+    const opened = step(openCase(data, ctxFor('coord-a'), { kind: 'withdrawal', recordId: 'rec-rhea', reason: 'The person asked to withdraw (fictional).', personAgreed: true }));
+    expect(opened.data.records.find((item) => item.id === 'rec-rhea')?.optedIn).toBe(false);
+    expect(opened.data.audit.at(-1)).toMatchObject({ actor: { role: 'coordinator', id: 'coord-a' }, via: 'coord-a' });
+    const resolved = step(resolveCase(opened.data, ctxFor('council'), { caseId: opened.id!, resolution: 'Withdrawal request recorded; no information was deleted.' }));
+    expect(resolved.data.cases.find((item) => item.id === opened.id)?.resolution).toBe('Withdrawal request recorded; no information was deleted.');
+  });
+
+  it('lets an assigned coordinator submit a correction request only with the person’s online agreement', () => {
+    const data = fresh();
+    const snapshot = JSON.stringify(data);
+    const result = openCase(data, ctxFor('coord-a'), { kind: 'profile_correction', recordId: 'rec-rhea', reason: 'The person asked to correct their profile details.', personAgreed: true });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.cases.find((item) => item.id === result.id)).toMatchObject({ kind: 'profile_correction', openedBy: 'coord-a', state: 'open' });
+    expect(JSON.stringify(data)).toBe(snapshot);
   });
 });
 

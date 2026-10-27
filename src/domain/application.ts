@@ -146,8 +146,8 @@ export function applyReceivedFields(
   }
   if (wasVerified) {
     if (isSubstantiveChange(before, fields)) target.application.updatePending = true;
-    // A new creative edit answers any earlier request for changes to the update.
-    target.application.updateReason = null;
+    // Contact-only changes do not answer an outstanding council request about public content.
+    if (isSubstantiveChange(before, fields)) target.application.updateReason = null;
     log(d, ctx, { entityType: 'record', entityId: recordId, action: 'profile_changed', from: 'verified', to: 'verified', viaId });
     return;
   }
@@ -286,7 +286,7 @@ export function startReview(data: DomainData, ctx: Ctx, recordId: string): Resul
 export function approveApplication(
   data: DomainData,
   ctx: Ctx,
-  input: { recordId: string; approvePublicContent: boolean },
+  input: { recordId: string; approvePublicContent: boolean; publicChangesReason?: string },
 ): Result {
   if (!can(ctx.actor, 'council_decide')) return fail('forbidden', 'Only council staff can verify a record.');
   const record = findRecord(data, input.recordId);
@@ -301,6 +301,9 @@ export function approveApplication(
   if (duplicate?.status === 'linked') {
     return fail('duplicate_linked', 'This record is linked to an existing record. Its history stays with that record, so it cannot be verified separately.');
   }
+  const publicChangesReason = input.publicChangesReason?.trim();
+  if (input.publicChangesReason !== undefined && !publicChangesReason) return fail('reason_required', 'Explain what needs to change in the public profile.');
+  if (input.approvePublicContent && publicChangesReason) return fail('conflicting_public_decision', 'Choose either approval of current public content or a request for changes.');
   const next = cloneData(data);
   const target = findRecord(next, input.recordId)!;
   target.application.state = 'verified';
@@ -312,6 +315,11 @@ export function approveApplication(
     target.application.updatePending = false;
     target.application.updateReason = null;
     log(next, ctx, { entityType: 'record', entityId: target.id, action: 'public_content_approved', to: 'public_content_approved' });
+  } else if (publicChangesReason) {
+    target.publicApprovedFingerprint = null;
+    target.application.updatePending = true;
+    target.application.updateReason = publicChangesReason;
+    log(next, ctx, { entityType: 'record', entityId: target.id, action: 'public_content_changes_requested', from: 'under_review', to: 'update_pending', reason: publicChangesReason });
   }
   return { ok: true, data: next, id: target.id };
 }
@@ -405,6 +413,23 @@ export function resolveUpdate(
   if (!reason) return reasonMissing('ask for changes');
   target.application.updateReason = reason;
   log(next, ctx, { entityType: 'record', entityId: target.id, action: 'update_changes_requested', from: 'update_pending', to: 'update_pending', reason });
+  return { ok: true, data: next, id: target.id };
+}
+
+/** Council can review public content after membership has already been verified. */
+export function requestPublicContentChanges(data: DomainData, ctx: Ctx, input: { recordId: string; reason: string }): Result {
+  if (!can(ctx.actor, 'council_decide')) return fail('forbidden', 'Only council staff can request public-content changes.');
+  const reason = requireReason(input.reason);
+  if (!reason) return reasonMissing('request public-content changes');
+  const record = findRecord(data, input.recordId);
+  if (!record) return fail('not_found', 'That record could not be found.');
+  if (record.application.state !== 'verified') return fail('not_verified', 'Verify membership before requesting profile-content changes.');
+  const next = cloneData(data);
+  const target = findRecord(next, input.recordId)!;
+  const from = target.application.updatePending ? 'update_pending' : 'public_content_unreviewed';
+  target.application.updatePending = true;
+  target.application.updateReason = reason;
+  log(next, ctx, { entityType: 'record', entityId: target.id, action: 'public_content_changes_requested', from, to: 'update_pending', reason });
   return { ok: true, data: next, id: target.id };
 }
 

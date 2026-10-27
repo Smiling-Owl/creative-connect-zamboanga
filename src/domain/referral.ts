@@ -41,6 +41,7 @@ export function expressInterest(data: DomainData, ctx: Ctx, input: { recordId: s
   if (!can(ctx.actor, 'express_interest', { personId: record.personId })) {
     return fail('forbidden', 'Only the creator can express interest.');
   }
+  if (record.application.duplicate?.status === 'linked') return fail('linked_alias', 'Linked records keep their history but cannot receive new referrals.');
   if (record.application.state !== 'verified') {
     return fail('not_verified', 'You can express interest after the council verifies your record.');
   }
@@ -79,6 +80,7 @@ export function inviteCreative(data: DomainData, ctx: Ctx, input: { recordId: st
   if (!can(ctx.actor, 'manage_referral')) return fail('forbidden', 'Only council staff can invite a creative.');
   const record = findRecord(data, input.recordId);
   if (!record) return fail('not_found', 'That record could not be found.');
+  if (record.application.duplicate?.status === 'linked') return fail('linked_alias', 'Linked records keep their history but cannot receive new referrals.');
   if (record.application.state !== 'verified') return fail('not_verified', 'Only verified records can be invited.');
   const opportunity = findOpportunity(data, input.opportunityId);
   if (!opportunity) return fail('not_found', 'That opportunity could not be found.');

@@ -198,6 +198,95 @@ test('assisted record follow-up, relayed offer and invitation keep audit attribu
   expect(state.data.audit.some((event: { action: string; via: string | null }) => event.action === 'offer_response_relayed' && event.via === 'coord-a')).toBe(true);
 });
 
+test('assigned coordinator can maintain an accountless verified profile only with fresh agreement', async ({ page }) => {
+  await choosePersona(page, 'Coordinator — Demo Site B');
+  await page.goto('./#/coordinator/records/rec-dani');
+  await expect(page.getByRole('heading', { name: 'Help maintain this verified profile' })).toBeVisible();
+  const before = await page.evaluate(() => JSON.parse(window.localStorage.getItem('ccz-demo:v1') ?? '{}').state.data.records.find((record: { id: string }) => record.id === 'rec-dani'));
+  expect(before.personId).toBeNull();
+  await page.getByLabel('Specific creative practice · council review').fill('Illustration and community storytelling');
+  const consent = page.getByLabel('The person reviewed and agreed to this exact profile update.');
+  await consent.check();
+  await page.getByLabel('General location · council review').selectOption({ label: 'Area 3 (broad, fictional)' });
+  await expect(consent).not.toBeChecked();
+  await page.getByRole('button', { name: 'Send agreed profile update' }).click();
+  await expect(consent).toBeFocused();
+  await consent.check();
+  await page.getByRole('button', { name: 'Send agreed profile update' }).click();
+  await expect(page.getByText(/The agreed profile update was recorded/)).toBeVisible();
+  const updated = await page.evaluate(() => JSON.parse(window.localStorage.getItem('ccz-demo:v1') ?? '{}').state.data.records.find((record: { id: string }) => record.id === 'rec-dani'));
+  expect(updated).toMatchObject({ personId: null, source: before.source, siteId: before.siteId, coordinatorId: before.coordinatorId, optedIn: before.optedIn, application: { reference: before.application.reference, state: 'verified', updatePending: true } });
+  expect(updated.intake.followUp).toEqual({ kind: 'coordinator_mediated', coordinatorId: 'coord-b' });
+});
+
+test('assisted profile validation focuses names and the add-evidence control', async ({ page }) => {
+  await page.goto('./#/coordinator/records/rec-rhea');
+  const name = page.getByLabel('Name for council record · private');
+  const originalName = await name.inputValue();
+  await name.fill('');
+  await page.getByRole('button', { name: 'Send agreed profile update' }).click();
+  await expect(name).toBeFocused();
+
+  await name.fill(originalName);
+  const displayName = page.getByLabel('Public display name · council review');
+  const originalDisplayName = await displayName.inputValue();
+  await displayName.fill('');
+  await page.getByRole('button', { name: 'Send agreed profile update' }).click();
+  await expect(displayName).toBeFocused();
+
+  await displayName.fill(originalDisplayName);
+  const evidenceCount = await page.getByRole('button', { name: 'Remove evidence' }).count();
+  for (let index = 0; index < evidenceCount; index += 1) {
+    await page.getByRole('button', { name: 'Remove evidence' }).first().click();
+  }
+  const addEvidence = page.getByRole('button', { name: 'Add work evidence' });
+  await page.getByRole('button', { name: 'Send agreed profile update' }).click();
+  await expect(addEvidence).toBeFocused();
+});
+
+test('coordinator withdrawal requires consent, immediately unlists, and appears in assigned case history', async ({ page }) => {
+  await choosePersona(page, 'Coordinator — Demo Site B');
+  await page.goto('./#/coordinator/records/rec-dani');
+  await page.getByLabel('Request type').selectOption('withdrawal');
+  const reason = page.locator('#assisted-case-reason');
+  await reason.fill('The person asked to withdraw this listing (fictional).');
+  const consent = page.getByLabel('The person agreed to send this exact request to the council.');
+  await consent.check();
+  await reason.fill('The person asked to withdraw this listing now (fictional).');
+  await expect(consent).not.toBeChecked();
+  await page.getByRole('button', { name: 'Send withdrawal request' }).click();
+  await expect(consent).toBeFocused();
+  await consent.check();
+  await page.getByRole('button', { name: 'Send withdrawal request' }).click();
+  await expect(page.getByText(/Withdrawal request sent/)).toBeVisible();
+  await expect(consent).not.toBeChecked();
+  const saved = await page.evaluate(() => JSON.parse(window.localStorage.getItem('ccz-demo:v1') ?? '{}').state.data);
+  expect(saved.records.find((record: { id: string }) => record.id === 'rec-dani').optedIn).toBe(false);
+  expect(saved.cases.some((item: { recordId: string; kind: string; state: string; openedBy: string; reason: string }) => item.recordId === 'rec-dani' && item.kind === 'withdrawal' && item.state === 'open' && item.openedBy === 'coord-b' && item.reason === 'The person asked to withdraw this listing now (fictional).')).toBe(true);
+  await expect(page.getByRole('heading', { name: 'Requests on this record' })).toBeVisible();
+  await choosePersona(page, 'Council administrator (fictional)');
+  await page.goto('./#/council?tab=cases');
+  await page.locator('a[href="#/council/applications/rec-dani"]').click();
+  await page.getByLabel('Resolution note').fill('Withdrawal recorded; no information was deleted.');
+  await page.getByRole('button', { name: 'Resolve case' }).click();
+  await choosePersona(page, 'Coordinator — Demo Site B');
+  await page.goto('./#/coordinator/records/rec-dani');
+  await expect(page.getByText('Withdrawal recorded; no information was deleted.').last()).toBeVisible();
+});
+
+test('offline F02 maintenance and profile requests explain that they are not queued', async ({ page }) => {
+  await choosePersona(page, 'Coordinator — Demo Site B');
+  await page.goto('./#/coordinator/records/rec-dani');
+  const details = page.locator('.demo-bar details');
+  await details.locator('summary').click();
+  await page.getByRole('button', { name: 'Connection: online (simulated)' }).click();
+  await details.locator('summary').click();
+  await expect(page.getByRole('button', { name: 'Send agreed profile update' })).toBeDisabled();
+  await expect(page.getByText('A connection is required. This verified-profile update is not queued offline.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Send correction request' })).toBeDisabled();
+  await expect(page.getByText('A connection is required. Requests are not queued offline.')).toBeVisible();
+});
+
 test('coordinator screens remain accessible and fit a 320px viewport', async ({ page }) => {
   for (const width of [320, 360]) {
     await page.setViewportSize({ width, height: 640 });

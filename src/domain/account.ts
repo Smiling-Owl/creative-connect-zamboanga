@@ -13,6 +13,7 @@ export function inviteAccount(data: DomainData, ctx: Ctx, input: { recordId: str
   if (!can(ctx.actor, 'invite_account', { siteId: record.siteId })) {
     return fail('forbidden', 'Only the coordinator for this record’s site can send an invitation.');
   }
+  if (record.application.duplicate?.status === 'linked') return fail('linked_alias', 'Linked records keep their history but cannot receive new invitations.');
   if (record.personId) return fail('already_linked', 'This record already has a personal account.');
   if (record.inviteCode) return { ok: true, data, id: record.id };
 

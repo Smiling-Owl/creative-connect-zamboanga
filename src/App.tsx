@@ -8,6 +8,7 @@ import { DemoStoreProvider, useDemo } from './state/store';
 import { PublicView } from './views/public/PublicViews';
 import { IntakeView } from './views/intake/IntakeViews';
 import { CoordinatorView } from './views/coordinator/CoordinatorViews';
+import { CouncilView, CreativeProfileView } from './views/council/CouncilViews';
 
 const INTAKE_FOCUS_TARGETS: Record<string, string> = {
   name: 'intake-name',
@@ -70,12 +71,16 @@ function Layout() {
           <ul className="nav-list">
           {NAV[actor.role].map((item) => {
             const isCoordinatorDestination = actor.role === 'coordinator' && item.to.startsWith('/coordinator');
+            const isCouncilQueueDestination = actor.role === 'council' && (item.to === '/council' || item.to.startsWith('/council?'));
             const followups = location.pathname === '/coordinator' && new URLSearchParams(location.search).get('tab') === 'followups';
+            const councilTab = new URLSearchParams(location.search).get('tab');
             const active = isCoordinatorDestination
               ? item.to.includes('tab=followups') ? followups : location.pathname.startsWith('/coordinator') && !followups
-              : false;
+              : isCouncilQueueDestination
+                ? item.to.includes('tab=records') ? location.pathname === '/council' && councilTab === 'records' : location.pathname === '/council' && councilTab !== 'records'
+                : false;
             return <li key={item.to}>
-              {isCoordinatorDestination
+              {isCoordinatorDestination || isCouncilQueueDestination
                 ? <Link to={item.to} className={active ? 'nav-link is-active' : 'nav-link'} aria-current={active ? 'page' : undefined}>{item.label}</Link>
                 : <NavLink to={item.to} className={({ isActive }) => (isActive ? 'nav-link is-active' : 'nav-link')}>{item.label}</NavLink>}
             </li>;
@@ -107,7 +112,7 @@ function Layout() {
 }
 
 function ViewPage({ view }: { view: ViewDef }) {
-  const { actor } = useDemo();
+  const { actor, state } = useDemo();
   useEffect(() => {
     document.title = `${view.title} — Creative Connect Zamboanga (prototype)`;
   }, [view.title]);
@@ -128,6 +133,13 @@ function ViewPage({ view }: { view: ViewDef }) {
   }
   if (view.id === 'F01' || view.id === 'F02') {
     return <><PageHeader id={view.id} title={view.title} /><CoordinatorView id={view.id} /></>;
+  }
+  if (view.id === 'M01' || view.id === 'M02') {
+    return <><PageHeader id={view.id} title={view.title} /><CouncilView id={view.id} /></>;
+  }
+  if (view.id === 'C02') {
+    const recordId = state.data.records.find((record) => record.personId === actor.id)?.id ?? 'none';
+    return <><PageHeader id={view.id} title={view.title} /><CreativeProfileView key={`${actor.id}:${recordId}`} /></>;
   }
   return (
     <>

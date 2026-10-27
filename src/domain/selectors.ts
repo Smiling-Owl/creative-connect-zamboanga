@@ -37,26 +37,24 @@ export interface CouncilCounts {
 }
 
 export function councilCounts(data: DomainData): CouncilCounts {
-  const byState = (state: string) => data.records.filter((r) => r.application.state === state).length;
+  const records = data.records.filter((r) => r.application.duplicate?.status !== 'linked');
+  const byState = (state: string) => records.filter((r) => r.application.state === state).length;
   const opportunities = Object.fromEntries(
     OPPORTUNITY_STATES.map((s) => [s, data.opportunities.filter((o) => o.state === s).length]),
   ) as Record<OpportunityState, number>;
-  const referrals = Object.fromEntries(
-    REFERRAL_STATES.map((s) => [s, data.referrals.filter((r) => r.state === s).length]),
-  ) as Record<ReferralState, number>;
   return {
     received: byState('received'),
     underReview: byState('under_review'),
     changesRequested: byState('changes_requested'),
     declined: byState('declined'),
     verified: byState('verified'),
-    verifiedNotListed: data.records.filter((r) => r.application.state === 'verified' && !isListed(r)).length,
-    listed: data.records.filter(isListed).length,
-    openDuplicates: data.records.filter((r) => r.application.duplicate?.status === 'open').length,
-    updatesPending: data.records.filter((r) => r.application.updatePending).length,
+    verifiedNotListed: records.filter((r) => r.application.state === 'verified' && !isListed(r)).length,
+    listed: records.filter(isListed).length,
+    openDuplicates: records.filter((r) => r.application.duplicate?.status === 'open').length,
+    updatesPending: records.filter((r) => r.application.updatePending).length,
     openCases: data.cases.filter((c) => c.state === 'open').length,
     opportunities,
-    referrals,
+    referrals: Object.fromEntries(REFERRAL_STATES.map((state) => [state, data.referrals.filter((r) => r.state === state).length])) as Record<ReferralState, number>,
   };
 }
 
@@ -90,9 +88,25 @@ export function creativeView(data: DomainData, personId: string) {
   return { record, drafts, referrals, listing: record ? listingStatus(record) : null };
 }
 
-/** Council review queue: every record that the council has received, newest first. */
-export function councilQueue(data: DomainData): CreativeRecord[] {
-  return [...data.records].sort((a, b) => b.application.receivedAt.localeCompare(a.application.receivedAt));
+export type CouncilQueueTab = 'new' | 'resubmitted' | 'under_review' | 'cases' | 'records';
+
+/** Council queue is derived only from received records; local drafts and queues are not records. */
+export function councilQueue(data: DomainData, tab: CouncilQueueTab = 'new'): CreativeRecord[] {
+  const received = data.records.filter((record) => record.application.duplicate?.status !== 'linked');
+  const selected = tab === 'records' ? data.records
+    : tab === 'new' ? received.filter((record) => record.application.state === 'received' && record.application.version === 1)
+    : tab === 'resubmitted' ? received.filter((record) => record.application.state === 'received' && record.application.version > 1)
+    : tab === 'under_review' ? received.filter((record) => record.application.state === 'under_review' || (record.application.state === 'verified' && record.application.updatePending))
+    : received.filter((record) => data.cases.some((item) => item.recordId === record.id && item.state === 'open'));
+  return [...selected].sort((a, b) => b.application.receivedAt.localeCompare(a.application.receivedAt));
+}
+
+export function councilCases(data: DomainData) {
+  return [...data.cases].sort((a, b) => {
+    const aTime = data.audit.find((event) => event.entityType === 'case' && event.entityId === a.id && event.action === 'opened')?.at ?? '';
+    const bTime = data.audit.find((event) => event.entityType === 'case' && event.entityId === b.id && event.action === 'opened')?.at ?? '';
+    return bTime.localeCompare(aTime);
+  });
 }
 
 /** The single most useful next step for a creative. Plain words; never a promise of work or a place. */
@@ -131,12 +145,18 @@ export interface FunnelStage {
 
 /** Synthetic funnel. Every stage states its base, so a rate is never shown without its denominator. */
 export function councilFunnel(data: DomainData): FunnelStage[] {
-  const received = data.records.length;
-  const verified = data.records.filter((r) => r.application.state === 'verified').length;
-  const listed = data.records.filter(isListed).length;
-  const referred = new Set(data.referrals.map((r) => r.recordId)).size;
-  const confirmed = new Set(data.referrals.filter((r) => CAPACITY_STATES.includes(r.state)).map((r) => r.recordId)).size;
-  const attended = new Set(data.referrals.filter((r) => r.state === 'completed').map((r) => r.recordId)).size;
+  const records = data.records.filter((r) => r.application.duplicate?.status !== 'linked');
+  const primaryRecordId = (recordId: string) => {
+    const record = data.records.find((item) => item.id === recordId);
+    return record?.application.duplicate?.status === 'linked' ? record.application.duplicate.candidateRecordId : recordId;
+  };
+  const referrals = data.referrals;
+  const received = records.length;
+  const verified = records.filter((r) => r.application.state === 'verified').length;
+  const listed = records.filter(isListed).length;
+  const referred = new Set(referrals.map((r) => primaryRecordId(r.recordId))).size;
+  const confirmed = new Set(referrals.filter((r) => CAPACITY_STATES.includes(r.state)).map((r) => primaryRecordId(r.recordId))).size;
+  const attended = new Set(referrals.filter((r) => r.state === 'completed').map((r) => primaryRecordId(r.recordId))).size;
   return [
     { label: 'Received by the council', count: received, base: received, baseLabel: 'received records' },
     { label: 'Verified', count: verified, base: received, baseLabel: 'received records' },

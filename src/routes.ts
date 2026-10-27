@@ -61,6 +61,7 @@ export const NAV: Record<Role, NavItem[]> = {
   ],
   council: [
     { label: 'Overview and queue', to: '/council' },
+    { label: 'Creative records', to: '/council?tab=records' },
     { label: 'Opportunities', to: '/council/opportunities' },
     { label: 'Referrals', to: '/council/referrals' },
   ],

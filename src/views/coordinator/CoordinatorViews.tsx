@@ -2,16 +2,21 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { AccessDenied, Button, ConfirmDialog, Notice, Simulated, StatusBadge } from '../../components/ui';
 import { inviteAccount } from '../../domain/account';
-import { recordFollowupNote } from '../../domain/coordinator';
+import { assistProfileUpdate, recordFollowupNote } from '../../domain/coordinator';
+import { openCase } from '../../domain/cases';
+import { intakeValidationErrors } from '../../domain/application';
 import { coordinatorWorkspace, noticesFor } from '../../domain/selectors';
 import { resolveConflict, syncQueue } from '../../domain/queue';
 import { respondToOffer } from '../../domain/referral';
 import type { IntakeFields, QueueItem } from '../../domain/types';
+import { focusProfileField, ProfileFieldsEditor } from '../../components/ProfileFieldsEditor';
 import { APPLICATION_LABEL, REFERRAL_LABEL, TRANSFER_LABEL } from '../../labels';
 import { useDemo } from '../../state/store';
 
 export function CoordinatorView({ id }: { id: 'F01' | 'F02' }) {
-  return id === 'F01' ? <Workspace /> : <AssistedRecord />;
+  const { actor } = useDemo();
+  const { recordId = '' } = useParams();
+  return id === 'F01' ? <Workspace /> : <AssistedRecord key={`${actor.id}:${recordId}`} />;
 }
 
 function Workspace() {
@@ -186,10 +191,21 @@ function AssistedRecord() {
   const [note, setNote] = useState('');
   const [feedback, setFeedback] = useState('');
   const [relayForms, setRelayForms] = useState<Record<string, { agreed: boolean; response: 'accept' | 'decline'; reason: string }>>({});
+  const [assistedFields, setAssistedFields] = useState<IntakeFields | null>(null);
+  const [updateAgreed, setUpdateAgreed] = useState(false);
+  const [updateErrors, setUpdateErrors] = useState<{ field: string; message: string }[]>([]);
+  const [caseKind, setCaseKind] = useState<'profile_correction' | 'withdrawal'>('profile_correction');
+  const [caseReason, setCaseReason] = useState('');
+  const [caseAgreed, setCaseAgreed] = useState(false);
+  const updateConsentRef = useRef<HTMLInputElement | null>(null);
+  const caseConsentRef = useRef<HTMLInputElement | null>(null);
   const workspace = coordinatorWorkspace(state.data, actor);
   const record = workspace.records.find((item) => item.id === recordId);
   if (!record) return <AccessDenied title="Assisted record" />;
 
+  const profileFields = assistedFields ?? record.intake;
+  const recordCases = state.data.cases.filter((item) => item.recordId === record.id);
+  const linkedAlias = record.application.duplicate?.status === 'linked';
   const referrals = state.data.referrals.filter((item) => item.recordId === record.id);
   const events = state.data.audit.filter((item) => item.entityId === record.id || referrals.some((referral) => item.entityId === referral.id)).slice(-12).reverse();
   const resultMessage = (result: ReturnType<typeof run>, success: string) => { setFeedback(result.ok ? success : result.message); };
@@ -202,6 +218,44 @@ function AssistedRecord() {
     if (result.ok) setNote('');
     resultMessage(result, 'Follow-up note added to the record timeline.');
   };
+  const submitProfileUpdate = () => {
+    const errors = intakeValidationErrors(profileFields);
+    if (errors.length) {
+      setUpdateErrors(errors);
+      focusProfileField(errors[0]!.field);
+      return;
+    }
+    setUpdateErrors([]);
+    if (!updateAgreed) {
+      setFeedback('Confirm that the person agreed to these exact profile changes before sending.');
+      updateConsentRef.current?.focus();
+      return;
+    }
+    const fields = { ...profileFields, skills: profileFields.skills.map((item) => item.trim()).filter(Boolean), interests: profileFields.interests.map((item) => item.trim()).filter(Boolean) };
+    const result = run((data, ctx) => assistProfileUpdate(data, ctx, { recordId: record.id, fields, personAgreed: updateAgreed }));
+    resultMessage(result, 'The agreed profile update was recorded. Membership stays verified; reviewed public changes wait for the council.');
+    setUpdateAgreed(false);
+    if (result.ok) {
+      const savedRecord = result.data.records.find((item) => item.id === record.id);
+      if (savedRecord) setAssistedFields(structuredClone(savedRecord.intake));
+    }
+  };
+  const submitProfileCase = () => {
+    if (!caseReason.trim()) {
+      setFeedback('Add a reason for the request.');
+      document.getElementById('assisted-case-reason')?.focus();
+      return;
+    }
+    if (!caseAgreed) {
+      setFeedback('Confirm that the person agreed to this exact request before sending.');
+      caseConsentRef.current?.focus();
+      return;
+    }
+    const result = run((data, ctx) => openCase(data, ctx, { kind: caseKind, recordId: record.id, reason: caseReason, personAgreed: caseAgreed }));
+    resultMessage(result, caseKind === 'withdrawal' ? 'Withdrawal request sent. This profile is now removed from the public directory.' : 'Profile correction request sent to the council.');
+    setCaseAgreed(false);
+    if (result.ok) setCaseReason('');
+  };
 
   return <div className="coordinator-stack">
     <p><Link to="/coordinator">← Back to coordinator workspace</Link></p>
@@ -213,6 +267,23 @@ function AssistedRecord() {
 
     {feedback ? <p role="status" aria-live="polite">{feedback}</p> : null}
     {record.application.state === 'changes_requested' ? <section className="public-card"><h2>Help correct this record</h2><p>Continue the correction for the same record and council reference.</p><Link className="btn btn-primary" to={`/apply?recordId=${encodeURIComponent(record.id)}`}>Open correction intake</Link></section> : null}
+
+    {record.application.state === 'verified' && !linkedAlias ? <>
+      <section className="public-card"><h2>Help maintain this verified profile</h2><p>This is an assisted update to the same council record. No personal account is required. The person must agree to the exact details before you send them. Public content changes may wait for council review; membership stays verified.</p>
+        <ProfileFieldsEditor fields={profileFields} onChange={(fields) => { setAssistedFields(fields); setUpdateAgreed(false); setUpdateErrors([]); }} coordinatorId={actor.id} errors={updateErrors} />
+        <label className="check-field"><input ref={updateConsentRef} type="checkbox" checked={updateAgreed} onChange={(event) => setUpdateAgreed(event.target.checked)} /> The person reviewed and agreed to this exact profile update.</label>
+        <Button disabled={!state.settings.online} onClick={submitProfileUpdate}>Send agreed profile update</Button>
+        {!state.settings.online ? <p className="muted">A connection is required. This verified-profile update is not queued offline.</p> : null}
+      </section>
+      <section className="public-card"><h2>Request help from the council</h2><p>Ask permission before sending either request. A withdrawal request removes a public listing immediately. The council handles both requests online.</p>
+        <label className="field-inline">Request type<select value={caseKind} onChange={(event) => { setCaseKind(event.target.value as typeof caseKind); setCaseAgreed(false); }}><option value="profile_correction">Profile correction</option><option value="withdrawal">Withdrawal</option></select></label>
+        <label className="field-inline">Reason<textarea id="assisted-case-reason" rows={3} value={caseReason} onChange={(event) => { setCaseReason(event.target.value); setCaseAgreed(false); }} /></label>
+        <label className="check-field"><input ref={caseConsentRef} type="checkbox" checked={caseAgreed} onChange={(event) => setCaseAgreed(event.target.checked)} /> The person agreed to send this exact request to the council.</label>
+        <Button disabled={!state.settings.online || recordCases.some((item) => item.kind === caseKind && item.state === 'open')} variant={caseKind === 'withdrawal' ? 'danger' : 'secondary'} onClick={submitProfileCase}>{caseKind === 'withdrawal' ? 'Send withdrawal request' : 'Send correction request'}</Button>
+        {!state.settings.online ? <p className="muted">A connection is required. Requests are not queued offline.</p> : null}
+      </section>
+    </> : null}
+    {recordCases.length ? <section className="public-card"><h2>Requests on this record</h2><ol className="timeline-list">{recordCases.slice().reverse().map((item) => <li key={item.id}><strong>{item.kind.replaceAll('_', ' ')} · {item.state === 'open' ? 'Waiting for council' : 'Resolved'}</strong><p>{item.reason}</p>{item.resolution ? <p><strong>Council note:</strong> {item.resolution}</p> : null}</li>)}</ol></section> : null}
 
     <section className="public-card"><h2>Follow-up</h2><form onSubmit={handleNote}><label className="field-inline" htmlFor="followup-note">Record a follow-up note<textarea id="followup-note" value={note} onChange={(event) => setNote(event.target.value)} required maxLength={500} /></label><p className="muted">Keep this to a brief, relevant note. Do not add personal contact details.</p><Button type="submit">Save follow-up note</Button></form></section>
 

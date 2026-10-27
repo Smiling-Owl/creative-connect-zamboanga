@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { approveApplication, declineApplication, editProfile, enqueueSubmission, intakeValidationErrors, requestChanges, resolveDuplicate, startReview, submitIntake, validateIntake } from './application';
+import { approveApplication, declineApplication, editProfile, enqueueSubmission, intakeValidationErrors, requestChanges, requestPublicContentChanges, resolveDuplicate, startReview, submitIntake, validateIntake } from './application';
 import { saveDraft } from './drafts';
 import { resolveConflict, syncQueue } from './queue';
 import { ctxFor, fresh } from '../test/helpers';
@@ -268,6 +268,40 @@ describe('council review', () => {
     expect(noReason.ok).toBe(false);
     const noDecline = declineApplication(data, ctxFor('council'), { recordId: 'rec-joel-2', reason: '' });
     expect(noDecline.ok).toBe(false);
+  });
+
+  it('approves membership while recording public-content changes as a separate pending review', () => {
+    const reviewing = startReview(fresh(), ctxFor('council'), 'rec-ines');
+    if (!reviewing.ok) throw new Error(reviewing.message);
+    const result = approveApplication(reviewing.data, ctxFor('council'), {
+      recordId: 'rec-ines', approvePublicContent: false, publicChangesReason: '  Please choose an approved work sample.  ',
+    });
+    if (!result.ok) throw new Error(result.message);
+    const record = result.data.records.find((item) => item.id === 'rec-ines')!;
+    expect(record.application.state).toBe('verified');
+    expect(record.application.updatePending).toBe(true);
+    expect(record.application.updateReason).toBe('Please choose an approved work sample.');
+    expect(record.publicApprovedFingerprint).toBeNull();
+    expect(result.data.audit.at(-1)).toMatchObject({ action: 'public_content_changes_requested', reason: 'Please choose an approved work sample.' });
+  });
+
+  it('rejects blank public-change reasons and does not combine public approval with a change request', () => {
+    const reviewing = startReview(fresh(), ctxFor('council'), 'rec-ines');
+    if (!reviewing.ok) throw new Error(reviewing.message);
+    expect(approveApplication(reviewing.data, ctxFor('council'), { recordId: 'rec-ines', approvePublicContent: false, publicChangesReason: '   ' }))
+      .toMatchObject({ ok: false, code: 'reason_required' });
+    expect(approveApplication(reviewing.data, ctxFor('council'), { recordId: 'rec-ines', approvePublicContent: true, publicChangesReason: 'Please change the image.' }))
+      .toMatchObject({ ok: false, code: 'conflicting_public_decision' });
+    expect(reviewing.data.records.find((item) => item.id === 'rec-ines')!.application.state).toBe('under_review');
+  });
+
+  it('lets council review public content after membership verification and stores requested changes as pending', () => {
+    const data = fresh();
+    const noel = data.records.find((record) => record.id === 'rec-noel')!;
+    const pending = { ...data, records: data.records.map((record) => record.id === noel.id ? { ...record, publicApprovedFingerprint: null } : record) };
+    const result = requestPublicContentChanges(pending, ctxFor('council'), { recordId: noel.id, reason: 'Please select an approved work example.' });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.records.find((record) => record.id === noel.id)?.application).toMatchObject({ state: 'verified', updatePending: true, updateReason: 'Please select an approved work example.' });
   });
 
   it('a received record moves through review and changes are requested with the reason kept', () => {

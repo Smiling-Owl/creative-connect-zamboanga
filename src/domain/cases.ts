@@ -9,14 +9,18 @@ import type { Case, CaseKind, Ctx, DomainData, OutcomeState, Result } from './ty
 export function openCase(
   data: DomainData,
   ctx: Ctx,
-  input: { kind: CaseKind; recordId: string; referralId?: string | null; reason: string },
+  input: { kind: CaseKind; recordId: string; referralId?: string | null; reason: string; personAgreed?: boolean },
 ): Result {
   const reason = requireReason(input.reason);
   if (!reason) return reasonMissing('send this request');
   const record = findRecord(data, input.recordId);
   if (!record) return fail('not_found', 'That record could not be found.');
 
-  if (input.kind === 'human_review') {
+  if (ctx.actor.role === 'coordinator' && (input.kind === 'profile_correction' || input.kind === 'withdrawal')) {
+    if (!ctx.settings.online) return fail('offline', 'This request needs a connection. It has not been sent to the council.');
+    if (input.personAgreed !== true) return fail('consent_required', 'Confirm that the person agreed to send this request.');
+    if (!can(ctx.actor, 'request_case', { siteId: record.siteId })) return fail('forbidden', 'Only the coordinator for this record’s site can send this request.');
+  } else if (input.kind === 'human_review') {
     if (!can(ctx.actor, 'request_case', { personId: record.personId, siteId: record.siteId })) {
       return fail('forbidden', 'Only the creator, or the coordinator for this record, can request a human review.');
     }
@@ -47,6 +51,11 @@ export function openCase(
   if (duplicate) return fail('already_open', 'A request like this is already waiting for the council.');
 
   const next = cloneData(data);
+  if (input.kind === 'withdrawal') {
+    const targetRecord = findRecord(next, record.id)!;
+    targetRecord.optedIn = false;
+    log(next, ctx, { entityType: 'record', entityId: record.id, action: 'withdrawal_requested', from: 'listing_on', to: 'listing_off', reason, viaId: ctx.actor.role === 'coordinator' ? ctx.actor.id : null });
+  }
   const id = nextId(next, 'case');
   const created: Case = {
     id,
@@ -110,7 +119,7 @@ export function resolveCase(
     }
     case 'withdrawal': {
       record.optedIn = false;
-      log(next, ctx, { entityType: 'record', entityId: record.id, action: 'withdrawal_resolved', from: 'listing_on', to: 'listing_off', reason: resolution });
+      log(next, ctx, { entityType: 'record', entityId: record.id, action: 'withdrawal_disposition_recorded', from: 'listing_off', to: 'listing_off', reason: resolution });
       break;
     }
     case 'profile_correction': {

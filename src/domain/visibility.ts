@@ -20,6 +20,7 @@ export function publicFingerprint(intake: IntakeFields): string {
 export type ListingStatus = 'listed' | 'pending_review' | 'waiting_verification' | 'not_listed';
 
 export function listingStatus(record: CreativeRecord): ListingStatus {
+  if (record.application.duplicate?.status === 'linked') return 'not_listed';
   if (!record.optedIn) return 'not_listed';
   if (record.application.state !== 'verified') return 'waiting_verification';
   const approved =
@@ -37,6 +38,9 @@ export function setListing(data: DomainData, ctx: Ctx, input: { recordId: string
   if (!record) return fail('not_found', 'That record could not be found.');
   if (!can(ctx.actor, 'manage_visibility', { personId: record.personId })) {
     return fail('forbidden', 'Only the creator can change the public listing choice for this record.');
+  }
+  if (input.optedIn && data.cases.some((item) => item.recordId === record.id && item.kind === 'withdrawal' && item.state === 'open')) {
+    return fail('withdrawal_pending', 'The council must resolve the open withdrawal request before listing can be turned back on.');
   }
   if (record.optedIn === input.optedIn) {
     return { ok: true, data, id: record.id };

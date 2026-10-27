@@ -61,7 +61,7 @@ function record(
   fields: IntakeFields,
   source: IntakeSource,
   app: Application,
-  options: { personId?: string | null; optedIn?: boolean; approved?: boolean; inviteCode?: string | null } = {},
+  options: { personId?: string | null; optedIn?: boolean; approved?: boolean; inviteCode?: string | null; lastConfirmed?: string } = {},
 ): CreativeRecord {
   const personId = options.personId ?? null;
   return {
@@ -76,7 +76,7 @@ function record(
     optedIn: options.optedIn ?? false,
     publicApprovedFingerprint: options.approved === false ? null : publicFingerprint(fields),
     application: app,
-    lastConfirmed: RECEIVED,
+    lastConfirmed: options.lastConfirmed ?? RECEIVED,
     internalNotes: [],
   };
 }
@@ -248,6 +248,7 @@ export function baselineData(): DomainData {
     record('rec-noel', noel, SOURCE_SELF, application('CCZ-0003', 'verified', 1), {
       personId: 'person-noel',
       optedIn: true,
+      lastConfirmed: '2026-07-20T09:00:00.000Z',
     }),
     record('rec-vina', vina, SOURCE_A, application('CCZ-0004', 'verified', 1), { optedIn: true }),
     record('rec-joel', joel, SOURCE_A, application('CCZ-0005', 'verified', 1), { optedIn: false }),

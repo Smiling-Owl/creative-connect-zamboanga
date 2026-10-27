@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { approvePublicContent, listingStatus, publicFingerprint, setListing } from './visibility';
 import { approveApplication, editProfile, startReview } from './application';
 import { publicDirectory } from './publicProfile';
+import { openCase } from './cases';
 import { ctxFor, fresh } from '../test/helpers';
 import type { CreativeRecord, DomainData } from './types';
 
@@ -97,8 +98,26 @@ describe('public listing rules', () => {
     expect(record.application.state).toBe('verified');
   });
 
+  it('prevents turning listing back on while a withdrawal request is still open', () => {
+    const opened = step(openCase(fresh(), ctxFor('noel'), { kind: 'withdrawal', recordId: 'rec-noel', reason: 'Please remove the public listing.' }));
+    const optBackIn = setListing(opened.data, ctxFor('noel'), { recordId: 'rec-noel', optedIn: true });
+    expect(optBackIn).toMatchObject({ ok: false, code: 'withdrawal_pending' });
+    expect(rec(opened.data, 'rec-noel').optedIn).toBe(false);
+  });
+
   it('only the creator can change the listing choice', () => {
     expect(setListing(fresh(), ctxFor('council'), { recordId: 'rec-noel', optedIn: false }).ok).toBe(false);
     expect(setListing(fresh(), ctxFor('rhea'), { recordId: 'rec-noel', optedIn: false }).ok).toBe(false);
+  });
+
+  it('never projects a linked alias into the public directory, even if historical fields say it was approved', () => {
+    const data = fresh();
+    const alias = data.records.find((record) => record.id === 'rec-joel-2')!;
+    const linked = { ...data, records: data.records.map((record) => record.id === alias.id ? {
+      ...record, personId: 'person-joel-2', optedIn: true,
+      application: { ...record.application, state: 'verified' as const, duplicate: { candidateRecordId: 'rec-joel', status: 'linked' as const, reason: 'Same record (demo).' } },
+      publicApprovedFingerprint: publicFingerprint(record.intake),
+    } : record) };
+    expect(publicDirectory(linked).some((profile) => profile.id === alias.id)).toBe(false);
   });
 });

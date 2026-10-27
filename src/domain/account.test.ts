@@ -40,6 +40,16 @@ describe('account invitation and claim', () => {
     expect(inviteAccount(fresh(), ctxFor('coord-b', { online: false }), { recordId: 'rec-dani' }).ok).toBe(false);
   });
 
+  it('does not send a new invitation for a linked alias', () => {
+    const data = fresh();
+    const records = data.records.map((record) => {
+      if (record.id !== 'rec-joel-2') return record;
+      return { ...record, application: { ...record.application, duplicate: { candidateRecordId: 'rec-joel', status: 'linked' as const, reason: 'Same record (demo).' } } };
+    });
+    const linked = { ...data, records };
+    expect(inviteAccount(linked, ctxFor('coord-a'), { recordId: 'rec-joel-2' })).toMatchObject({ ok: false, code: 'linked_alias' });
+  });
+
   it('a wrong code is refused with a specific message', () => {
     const result = claimRecord(fresh(), ctxFor('jun'), { code: 'INV-9999' });
     expect(result.ok).toBe(false);

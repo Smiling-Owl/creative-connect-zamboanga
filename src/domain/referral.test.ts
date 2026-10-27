@@ -56,6 +56,17 @@ describe('offer, response, and confirmation', () => {
     expect(respondToOffer(invited.data, ctxFor('coord-b'), { referralId: invited.id!, response: 'accept' }).ok).toBe(false);
   });
 
+  it('does not create a new referral for a linked alias', () => {
+    const data = fresh();
+    const records = data.records.map((record) => {
+      if (record.id !== 'rec-joel-2') return record;
+      return { ...record, personId: 'person-joel-2', application: { ...record.application, state: 'verified' as const, duplicate: { candidateRecordId: 'rec-joel', status: 'linked' as const, reason: 'Same record (demo).' } } };
+    });
+    const linked = { ...data, records };
+    const ctx = { ...ctxFor('rhea'), actor: { role: 'creative' as const, id: 'person-joel-2' } };
+    expect(expressInterest(linked, ctx, { recordId: 'rec-joel-2', opportunityId: 'opp-clinic' })).toMatchObject({ ok: false, code: 'linked_alias' });
+  });
+
   it('confirmation is a separate council step that requires acceptance and free capacity', () => {
     let data = fresh();
     const invited = must(inviteCreative(data, ctxFor('council'), { recordId: 'rec-noel', opportunityId: CLINIC }));
