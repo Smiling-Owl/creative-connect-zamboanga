@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { HashRouter, NavLink, Outlet, Route, Routes, useLocation } from 'react-router';
+import { HashRouter, Link, NavLink, Outlet, Route, Routes, useLocation } from 'react-router';
 import { DemoControls } from './demo/DemoControls';
 import { AccessDenied, Button, PageHeader } from './components/ui';
 import { ROLE_LABEL } from './labels';
@@ -7,6 +7,7 @@ import { NAV, VIEWS, canOpen, type ViewDef } from './routes';
 import { DemoStoreProvider, useDemo } from './state/store';
 import { PublicView } from './views/public/PublicViews';
 import { IntakeView } from './views/intake/IntakeViews';
+import { CoordinatorView } from './views/coordinator/CoordinatorViews';
 
 const INTAKE_FOCUS_TARGETS: Record<string, string> = {
   name: 'intake-name',
@@ -67,13 +68,18 @@ function Layout() {
         </div>
         <nav aria-label="Main">
           <ul className="nav-list">
-            {NAV[actor.role].map((item) => (
-              <li key={item.to}>
-                <NavLink to={item.to} className={({ isActive }) => (isActive ? 'nav-link is-active' : 'nav-link')}>
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
+          {NAV[actor.role].map((item) => {
+            const isCoordinatorDestination = actor.role === 'coordinator' && item.to.startsWith('/coordinator');
+            const followups = location.pathname === '/coordinator' && new URLSearchParams(location.search).get('tab') === 'followups';
+            const active = isCoordinatorDestination
+              ? item.to.includes('tab=followups') ? followups : location.pathname.startsWith('/coordinator') && !followups
+              : false;
+            return <li key={item.to}>
+              {isCoordinatorDestination
+                ? <Link to={item.to} className={active ? 'nav-link is-active' : 'nav-link'} aria-current={active ? 'page' : undefined}>{item.label}</Link>
+                : <NavLink to={item.to} className={({ isActive }) => (isActive ? 'nav-link is-active' : 'nav-link')}>{item.label}</NavLink>}
+            </li>;
+          })}
           </ul>
         </nav>
         <p className="persona">
@@ -119,6 +125,9 @@ function ViewPage({ view }: { view: ViewDef }) {
   }
   if (view.id === 'R01' || view.id === 'R02' || view.id === 'C01') {
     return <><PageHeader id={view.id} title={view.title} /><IntakeView id={view.id} /></>;
+  }
+  if (view.id === 'F01' || view.id === 'F02') {
+    return <><PageHeader id={view.id} title={view.title} /><CoordinatorView id={view.id} /></>;
   }
   return (
     <>

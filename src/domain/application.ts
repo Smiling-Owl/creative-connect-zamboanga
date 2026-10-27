@@ -227,6 +227,21 @@ export function enqueueSubmission(data: DomainData, ctx: Ctx, input: { draftId: 
     }
     baseVersion = record.application.version;
   }
+  const existingCorrection = draft.recordId
+    ? next.queue.find((item) => item.coordinatorId === ctx.actor.id && item.recordId === draft.recordId && item.kind === 'correction' && (item.status === 'waiting' || item.status === 'failed' || item.status === 'conflict'))
+    : undefined;
+  if (existingCorrection) {
+    const previousStatus = existingCorrection.status;
+    existingCorrection.fields = draft.fields;
+    existingCorrection.source = draft.source;
+    existingCorrection.optedIn = input.optedIn;
+    existingCorrection.baseVersion = baseVersion;
+    existingCorrection.status = 'waiting';
+    existingCorrection.lastError = null;
+    existingCorrection.queuedAt = ctx.at;
+    log(next, ctx, { entityType: 'queue', entityId: existingCorrection.id, action: 'correction_replaced', from: previousStatus, to: 'waiting', viaId: ctx.actor.id });
+    return { ok: true, data: next, id: existingCorrection.id };
+  }
   const id = nextId(next, 'queue');
   const deviceRef = nextDeviceRef(next, siteCodeFor(next, draft.source.siteId));
   next.queue.push({

@@ -165,6 +165,8 @@ const NOTICE_TEXT: Record<string, (reference: string, detail: string | null) => 
   cancelled_by_opportunity: () => 'An opportunity you were linked to was cancelled. Your record is unchanged.',
   account_invited: () => 'An invitation to link your account is ready.',
   account_claimed: () => 'Your account is linked to your existing record.',
+  offer_awaiting_response: () => 'A place offer is waiting for a response.',
+  offer_response_relayed: () => 'A response to a place offer was recorded with coordinator assistance.',
 };
 
 /**
@@ -179,11 +181,16 @@ export function noticesFor(data: DomainData, actor: Actor, limit = 10): InAppNot
   const siteRecordIds = new Set(
     actor.role === 'coordinator' ? data.records.filter((r) => r.siteId === actor.siteId).map((r) => r.id) : [],
   );
+  const siteReferralIds = new Set(
+    actor.role === 'coordinator'
+      ? data.referrals.filter((referral) => siteRecordIds.has(referral.recordId)).map((referral) => referral.id)
+      : [],
+  );
 
   const visible = data.audit.filter((event) => {
     if (actor.role === 'council') return true;
     if (actor.role === 'creative') return ownRecordIds.has(event.entityId) || ownReferralIds.has(event.entityId);
-    if (actor.role === 'coordinator') return event.via === actor.id || siteRecordIds.has(event.entityId);
+    if (actor.role === 'coordinator') return event.via === actor.id || siteRecordIds.has(event.entityId) || siteReferralIds.has(event.entityId);
     return false;
   });
 
@@ -194,7 +201,16 @@ export function noticesFor(data: DomainData, actor: Actor, limit = 10): InAppNot
     .map((event) => {
       const record = data.records.find((r) => r.id === event.entityId);
       const reference = record?.application.reference ?? '';
-      const describe = NOTICE_TEXT[event.action]!;
-      return { id: event.id, at: event.at, text: describe(reference, event.reason) };
+      const referral = data.referrals.find((item) => item.id === event.entityId);
+      const describe = NOTICE_TEXT[event.action];
+      const referralNotice = event.action === 'state_changed' && actor.role === 'coordinator'
+        ? referral?.state === 'offered'
+          ? 'A place offer is waiting for a response.'
+          : referral?.state === 'confirmed'
+            ? 'The council confirmed a place for this referral.'
+            : null
+        : null;
+      const text = referralNotice ?? describe?.(reference, event.reason) ?? 'A referral you are assigned to was updated.';
+      return { id: event.id, at: event.at, text };
     });
 }

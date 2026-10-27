@@ -61,6 +61,13 @@ describe('in-app notices are scoped to the persona', () => {
     };
     expect(noticesFor(withEvent, ctxFor('council').actor).map((n) => n.text)).toEqual(['Council review has started.']);
   });
+
+  it('a coordinator sees an offer notice only for a referral assigned to their site', () => {
+    const data = fresh();
+    const event = { id: 'evt-offer', at: '2026-10-26T09:00:00.000Z', actor: { role: 'council' as const, id: 'council-1' }, via: null, entityType: 'referral' as const, entityId: 'ref-0004', action: 'state_changed', from: 'under_review', to: 'offered', reason: null };
+    expect(noticesFor({ ...data, audit: [event] }, ctxFor('coord-a').actor)[0]?.text).toBe('A place offer is waiting for a response.');
+    expect(noticesFor({ ...data, audit: [event] }, ctxFor('coord-b').actor)).toEqual([]);
+  });
 });
 
 describe('directory search', () => {

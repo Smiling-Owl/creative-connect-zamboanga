@@ -17,6 +17,7 @@ export type Action =
   | 'invite_account'
   | 'claim_record'
   | 'sync_queue'
+  | 'record_followup_note'
   | 'council_review'
   | 'council_decide'
   | 'manage_opportunity'
@@ -47,6 +48,7 @@ const COORDINATOR_ACTIONS: ReadonlySet<Action> = new Set<Action>([
   'request_case',
   'invite_account',
   'sync_queue',
+  'record_followup_note',
   'view_public',
 ]);
 

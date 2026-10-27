@@ -56,6 +56,7 @@ export const NAV: Record<Role, NavItem[]> = {
   ],
   coordinator: [
     { label: 'Workspace', to: '/coordinator' },
+    { label: 'Follow-ups', to: '/coordinator?tab=followups' },
     { label: 'Add creative', to: '/apply' },
   ],
   council: [

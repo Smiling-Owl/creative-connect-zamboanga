@@ -88,6 +88,47 @@ describe('drafts', () => {
   });
 });
 
+describe('queued corrections', () => {
+  it('replaces an existing waiting correction for the same record instead of creating another delivery', () => {
+    const start = fresh();
+    const ctx = ctxFor('coord-a', { online: false });
+    const firstDraft = saveDraft(start, ctx, { draftId: null, recordId: 'rec-gwen', source: SOURCE_A, fields: completeFields({ name: 'Gwen (fictional)', displayName: 'Gwen (demo)' }) });
+    if (!firstDraft.ok) throw new Error(firstDraft.message);
+    const firstQueue = enqueueSubmission(firstDraft.data, ctx, { draftId: firstDraft.id!, optedIn: false });
+    if (!firstQueue.ok) throw new Error(firstQueue.message);
+    const revisedDraft = saveDraft(firstQueue.data, ctx, { draftId: null, recordId: 'rec-gwen', source: SOURCE_A, fields: completeFields({ name: 'Gwen Revised (fictional)', displayName: 'Gwen Revised (demo)' }) });
+    if (!revisedDraft.ok) throw new Error(revisedDraft.message);
+    const replacement = enqueueSubmission(revisedDraft.data, ctx, { draftId: revisedDraft.id!, optedIn: false });
+    if (!replacement.ok) throw new Error(replacement.message);
+    expect(replacement.id).toBe(firstQueue.id);
+    expect(replacement.data.queue.filter((item) => item.recordId === 'rec-gwen' && item.kind === 'correction')).toHaveLength(1);
+    const queued = replacement.data.queue.find((item) => item.id === firstQueue.id)!;
+    expect(queued.fields.name).toBe('Gwen Revised (fictional)');
+    expect(queued.deviceRef).toBe(firstQueue.data.queue.find((item) => item.id === firstQueue.id)!.deviceRef);
+    const sent = syncQueue(replacement.data, ctxFor('coord-a'));
+    if (!sent.ok) throw new Error(sent.message);
+    expect(sent.data.records).toHaveLength(start.records.length);
+    expect(sent.data.records.find((record) => record.id === 'rec-gwen')!.application.version).toBe(3);
+    expect(sent.data.queue.find((item) => item.id === firstQueue.id)!.status).toBe('delivered');
+  });
+
+  it('replaces the prior conflict with the latest correction on the same queue item and current version', () => {
+    const start = fresh();
+    const ctx = ctxFor('coord-a', { online: false });
+    const draft = saveDraft(start, ctx, { draftId: null, recordId: 'rec-gwen', source: SOURCE_A, fields: completeFields({ name: 'Gwen New (fictional)', displayName: 'Gwen New (demo)' }) });
+    if (!draft.ok) throw new Error(draft.message);
+    const result = enqueueSubmission(draft.data, ctx, { draftId: draft.id!, optedIn: false });
+    if (!result.ok) throw new Error(result.message);
+    expect(result.id).toBe('queue-gwen');
+    expect(result.data.queue.filter((item) => item.recordId === 'rec-gwen' && item.kind === 'correction')).toHaveLength(1);
+    expect(result.data.queue.find((item) => item.id === 'queue-gwen')).toMatchObject({
+      status: 'waiting', baseVersion: 2, fields: { name: 'Gwen New (fictional)' }, deviceRef: 'DEV-A-011',
+    });
+    expect(result.data.audit.at(-1)).toMatchObject({ action: 'correction_replaced', from: 'conflict', to: 'waiting' });
+    expect(result.data.drafts.some((item) => item.id === draft.id)).toBe(false);
+  });
+});
+
 describe('submission and receipt', () => {
   it('applies the public-listing choice on correction resubmission', () => {
     const start = fresh();

@@ -183,6 +183,9 @@ export function respondToOffer(
   target.via = relayed ? ctx.actor.id : null;
   const reason = input.response === 'decline' ? requireReason(input.reason) : null;
   setState(next, ctx, target, input.response === 'accept' ? 'accepted' : 'declined', reason, relayed ? ctx.actor.id : null);
+  if (relayed) {
+    log(next, ctx, { entityType: 'referral', entityId: target.id, action: 'offer_response_relayed', from: 'offered', to: target.state, reason, viaId: ctx.actor.id });
+  }
   return { ok: true, data: next, id: target.id };
 }
 

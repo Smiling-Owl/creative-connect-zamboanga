@@ -7,7 +7,7 @@ import { openCase } from '../../domain/cases';
 import { saveDraft } from '../../domain/drafts';
 import { creativeNextAction, creativeView, noticesFor } from '../../domain/selectors';
 import { projectPublicIntake } from '../../domain/publicProfile';
-import { APPLICATION_LABEL, LISTING_LABEL, UPDATE_PENDING_LABEL } from '../../labels';
+import { APPLICATION_LABEL, LISTING_LABEL, TRANSFER_LABEL, UPDATE_PENDING_LABEL } from '../../labels';
 import type { IntakeFields, IntakeSource } from '../../domain/types';
 import { CREATIVE_DOMAINS } from '../../domain/taxonomy';
 import { demoTime, useDemo } from '../../state/store';
@@ -228,8 +228,11 @@ function IntakeReview() {
   const draft = state.data.drafts.find((item) => item.ownerId === actor.id && item.recordId === recordId && (!requestedDraftId || item.id === requestedDraftId));
   const key = intakeKey(actor.id, draft?.id ?? requestedDraftId ?? recordId);
   const meta = state.intakeUi[key];
-  const receipt = meta?.submission?.kind === 'received' ? state.data.records.find((item) => item.id === meta.submission?.id) : null;
   const queued = meta?.submission?.kind === 'queued' ? state.data.queue.find((item) => item.id === meta.submission?.id) : null;
+  const queuedReceipt = queued?.status === 'delivered' && queued.deliveredRecordId
+    ? state.data.records.find((item) => item.id === queued.deliveredRecordId) ?? null
+    : null;
+  const receipt = (meta?.submission?.kind === 'received' ? state.data.records.find((item) => item.id === meta.submission?.id) : null) ?? queuedReceipt;
   const errors = draft ? intakeValidationErrors(draft.fields) : [];
   const errorRef = useRef<HTMLElement | null>(null);
   const submitting = useRef(false);
@@ -286,8 +289,8 @@ function IntakeReview() {
     else setFeedback('Your assisted draft is saved on this device.');
   };
 
-  if (receipt) return <section className="public-stack"><Notice tone="success"><strong>Received by the council</strong><p>Reference {receipt.application.reference}. The council will review the information and contact you through your chosen follow-up route if needed.</p></Notice>{meta?.optedIn ? <p><StatusBadge label={LISTING_LABEL.pending_review.label} tone={LISTING_LABEL.pending_review.tone} /></p> : <p>Your listing is private. This choice does not affect support.</p>}{opportunity ? <p><Link to={`/opportunities/${opportunity.id}`}>Return to {opportunity.title}</Link></p> : null}<Link to="/me">Open your application status</Link></section>;
-  if (queued) return <section className="public-stack"><Notice tone="warning"><strong>Queued on this device — the council has not received it</strong><p>Device reference {queued.deviceRef}. The coordinator can send it when connected.</p></Notice><Link to="/coordinator">Return to the coordinator workspace</Link></section>;
+  if (receipt) return <section className="public-stack"><Notice tone="success"><strong>Received by the council</strong><p>Reference {receipt.application.reference}. The council will review the information and contact you through your chosen follow-up route if needed.</p></Notice>{meta?.optedIn ? <p><StatusBadge label={LISTING_LABEL.pending_review.label} tone={LISTING_LABEL.pending_review.tone} /></p> : <p>Your listing is private. This choice does not affect support.</p>}{opportunity ? <p><Link to={`/opportunities/${opportunity.id}`}>Return to {opportunity.title}</Link></p> : null}<Link to={actor.role === 'coordinator' ? `/coordinator/records/${receipt.id}` : '/me'}>{actor.role === 'coordinator' ? 'Open assisted record' : 'Open your application status'}</Link></section>;
+  if (queued) return <section className="public-stack"><Notice tone={queued.status === 'failed' || queued.status === 'conflict' ? 'danger' : 'warning'}><strong>{TRANSFER_LABEL[queued.status].label}</strong><p>Device reference {queued.deviceRef}. {queued.status === 'conflict' ? 'Review the changed record before resubmitting.' : queued.status === 'failed' ? 'Nothing was received. Retry this item from the coordinator workspace when connected.' : 'The coordinator can send it when connected.'}</p></Notice><Link to="/coordinator">Return to the coordinator workspace</Link></section>;
   if (!draft) return <section className="public-stack"><Notice tone="warning">This draft is not available in this account. It may already have been submitted or belongs to another person.</Notice><Link to={actor.role === 'creative' ? '/me' : '/apply'}>{actor.role === 'creative' ? 'Open your application status' : 'Return to intake'}</Link></section>;
 
   const preview = projectPublicIntake('draft-preview', draft.fields, demoTime(state.clock));
