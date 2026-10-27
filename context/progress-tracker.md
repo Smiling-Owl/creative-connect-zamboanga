@@ -35,6 +35,7 @@ User feedback on the merged theme: "right theme, some philosophies right, but it
 - Result: 72 rem layout with a 44 rem reading/form default (fails safe without `:has()`), 800-weight display type, dark P01 hero with yellow primary action and layered sail, equal tinted entry tiles, borderless ringed cards, segmented pill navigation (sticky only at ≥ 1150 px with matching `scroll-padding-top`), phone **Menu** disclosure below 900 px, segmented intake steps, borderless fieldsets with 44 px option rows, soft dotted badges, M01 big numerals with white cards and one yellow accent.
 - Header heights: phone (collapsed, 320×568) 177 px guest, 195 px others; desktop about 103–152 px (900–1149 static), 103–121 px sticky at ≥ 1150.
 - Results: typecheck/lint clean; `npm test` 180/180; e2e 82/82 (new phone-menu test incl. Escape scope and Back); CSS 5.95 KB gzip, JS 134.75 KB gzip; no external requests, fonts, images, filters, or backdrop blur; reverse-Tab focus check 0 hidden targets across 25 viewport/page combinations.
+- Integrated: `main` fast-forwarded to `74e5a34` and pushed to `origin/main` on 2026-10-28. Rerun on `main` after a clean `npm ci`: typecheck/lint clean, 180/180 unit, 82/82 e2e, build 5.95 KB CSS / 134.75 KB JS gzip, `git diff --check` clean.
 - Open: Safari/Firefox untested; visually hidden overview table headers rely on Chromium-verified semantics; list-row links rely on weight, not underline, at rest.
 
 ## Vinta theme — 2026-10-28
