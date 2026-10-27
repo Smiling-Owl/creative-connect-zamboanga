@@ -1,13 +1,13 @@
-/* Design tokens. Single source for colour, type, spacing, and shape. Light only: no OS theme dependency.
-   Vinta palette: band, sail mark, role markers, and fills (decorative or large/UI use only).
-   Text uses the text-safe tokens. Ratios are WCAG 2.x against #F8F8F8 (page) or #FFFFFF (surface). */
+/* Design tokens (v2 modern). Single source for colour, type, spacing, and shape. Light only: no OS theme dependency.
+   Vinta palette: band, sail marks, role markers, bento tints, and the dark hero. Text uses the text-safe tokens.
+   Ratios are WCAG 2.x against #F8F8F8 (page), #FFFFFF (surface), or the tint named in the comment. */
 :root {
   color-scheme: light;
 
   /* Vinta palette. Never raw orange, yellow, or blue as normal-size text on light backgrounds. */
   --vinta-orange: #fe4800; /* 3.22:1 on page: UI and decoration only */
   --vinta-green: #008735; /* 4.38:1 on page: decoration; text uses --color-accent */
-  --vinta-yellow: #feba00; /* 1.62:1 on page: decoration and halos; dark ink on it is 7.95:1 */
+  --vinta-yellow: #feba00; /* 1.62:1 on page: decoration; dark ink on it is 7.95:1 */
   --vinta-blue: #007ed5; /* 4.00:1 on page: decoration and UI; text uses --color-link */
   --vinta-dark: #2b2e32;
   --vinta-offwhite: #f8f8f8;
@@ -17,18 +17,31 @@
   --color-surface: #ffffff;
   --color-ink: #2b2e32; /* 12.84:1 on page */
   --color-ink-muted: #565b62; /* 6.44:1 on page, 6.84:1 on surface */
-  --color-border: #8a9099; /* inputs and UI boundaries: 3.03:1 on page, 3.22:1 on surface */
-  --color-divider: #dcdfe3; /* decorative card edges and rules */
-  --color-hover: #eef0f2; /* 11.94:1 with ink */
+  --color-border: #8a9099; /* input and UI boundaries: 3.03:1 on page, 3.22:1 on surface */
+  --color-divider: #e3e5e8; /* hairlines (decorative) */
+  --color-ring: rgb(43 46 50 / 8%); /* near-invisible card ring (decorative) */
+  --color-track: #eef0f2; /* segmented track and chips: ink 11.94:1, muted 5.99:1 */
+  --color-hover: #eef0f2;
 
   /* Interactive colour. */
   --color-accent: #008434; /* text-safe green; white text 4.83:1 */
   --color-accent-hover: #006d2b; /* white text 6.52:1 */
   --color-accent-ink: #ffffff;
-  --color-link: #0067b1; /* 5.53:1 on page */
+  --color-link: #0067b1; /* 5.53:1 on page, 5.31:1 on the blue tint */
   --color-focus: #2b2e32; /* 3 px focus outline: 12.84:1 on page */
   --color-focus-halo: var(--vinta-yellow); /* outer halo beside the dark outline */
   --color-demo: #5a4bb0; /* demo controls only: dashed outline, distinct from the palette; 6.44:1 on page */
+
+  /* Dark hero (P01). */
+  --color-hero: #2b2e32;
+  --color-hero-lead: #c9cdd2; /* 8.54:1 on the hero */
+  --color-hero-yellow-hover: #ffd35c; /* ink on it 9.56:1 */
+
+  /* Bento tints. Ink 12.2 to 12.5:1 and muted 6.1 to 6.3:1 on each. */
+  --tint-orange: #fff0eb;
+  --tint-green: #ebf5ef;
+  --tint-yellow: #fff4d6;
+  --tint-blue: #ebf5fc;
 
   /* Role-area markers. Public = blue, creative = orange, coordinator = green, council = yellow. */
   --area-public: var(--vinta-blue);
@@ -50,14 +63,17 @@
 
   /* Typography. System stack only: no web-font download. */
   --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif;
+  --text-eyebrow: 0.8125rem; /* eyebrow label and screen ID chip, 13 px */
   --text-sm: 0.9375rem; /* secondary text, 15 px */
   --text-base: 1.0625rem; /* body, 17 px */
-  --text-lg: 1.1875rem; /* sub-section heading, 19 px */
+  --text-lg: 1.125rem; /* wordmark, 18 px */
   --text-xl: 1.5rem; /* section heading, 24 px */
-  --text-2xl: clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem); /* page title */
-  --text-figure: 2rem; /* council figures */
+  --text-2xl: clamp(2rem, 1.4rem + 2.6vw, 3.25rem); /* page title: 800 weight */
+  --text-hero: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem); /* hero display */
+  --text-figure: clamp(2rem, 1.6rem + 1.4vw, 2.5rem); /* council figures */
   --leading-body: 1.55;
-  --tracking-heading: -0.01em;
+  --tracking-heading: -0.02em;
+  --tracking-display: -0.03em;
 
   /* Spacing: 4 px base. */
   --space-1: 0.25rem;
@@ -68,12 +84,18 @@
   --space-6: 2rem;
   --space-7: 3rem;
   --space-8: 4.5rem;
+  --space-9: 5rem;
 
   /* Shape. */
-  --radius: 8px;
-  --radius-lg: 16px;
+  --radius: 12px; /* controls and inputs */
+  --radius-lg: 20px; /* cards */
+  --radius-hero: 28px;
   --tap-min: 44px;
-  --content-max: 42rem;
-  --band-header: 10px;
-  --band-footer: 6px;
+  --control-min: 48px; /* primary actions and inputs */
+  --content-max: 72rem;
+  --reading-max: 44rem;
+  --sticky-header-offset: 140px; /* scroll-padding-top at 1150px+, set to the measured sticky header height plus 16px */
+  --header-h: 64px; /* desktop header bar; the context row sits beneath it */
+  --band-header: 4px;
+  --band-footer: 4px;
 }

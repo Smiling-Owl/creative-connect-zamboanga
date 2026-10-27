@@ -27,6 +27,16 @@ Complete the presenter-laptop handoff in `DEMO.md` and the manual accessibility 
 
 Dependency order: 01 -> 02 -> {03, 04, 07} -> {05, 06} -> 08 -> 09.
 
+## Vinta theme — modern revision (v2), 2026-10-28
+
+User feedback on the merged theme: "right theme, some philosophies right, but it looks old". Branch `feature/vinta-modern`; rules in `ui-context.md` → "Modern revision (v2)".
+
+- Haiku 5.5 implemented in five passes (v2 build, polish, verifier repairs, phone Menu); Sonnet 5.5 verified three times (CHANGES REQUIRED with a broken ≥900 px header grid and a WCAG 2.4.11 focus-obscured failure, then APPROVE). Root reviewed screenshots each pass and applied the final fixes: Menu icon `content`, Escape scoped to the header, menu closing on Back/Forward via render-time state reset, coordinator columns aligned to start.
+- Result: 72 rem layout with a 44 rem reading/form default (fails safe without `:has()`), 800-weight display type, dark P01 hero with yellow primary action and layered sail, equal tinted entry tiles, borderless ringed cards, segmented pill navigation (sticky only at ≥ 1150 px with matching `scroll-padding-top`), phone **Menu** disclosure below 900 px, segmented intake steps, borderless fieldsets with 44 px option rows, soft dotted badges, M01 big numerals with white cards and one yellow accent.
+- Header heights: phone (collapsed, 320×568) 177 px guest, 195 px others; desktop about 103–152 px (900–1149 static), 103–121 px sticky at ≥ 1150.
+- Results: typecheck/lint clean; `npm test` 180/180; e2e 82/82 (new phone-menu test incl. Escape scope and Back); CSS 5.95 KB gzip, JS 134.75 KB gzip; no external requests, fonts, images, filters, or backdrop blur; reverse-Tab focus check 0 hidden targets across 25 viewport/page combinations.
+- Open: Safari/Firefox untested; visually hidden overview table headers rely on Chromium-verified semantics; list-row links rely on weight, not underline, at rest.
+
 ## Vinta theme — 2026-10-28
 
 User-directed visual revision: the team's Zamboanga vinta palette (#FE4800, #008735, #FEBA00, #007ED5, #2B2E32, #F8F8F8) with a modern, low-bandwidth look drawn from Apple, GOV.UK, Linear, and Stripe principles. Branch `feature/vinta-theme` (worktree `E:/side-work/hermosa-vinta-theme`). Design direction is in `ui-context.md` (Visual Direction, Vinta signature, Typography, Design Tokens).
@@ -160,7 +170,7 @@ The first full browser run passed 24/25: the old Feature 03 return-context test 
 
 - No production backend/auth, real credentials/messages, official endorsement, live integrations, or personal-data collection.
 - No site deployment/hosting resource; GitHub is source hosting only.
-- Mobile navigation wraps rather than using a menu button, as previously accepted.
+- Mobile navigation (below 900 px) moves behind a Menu disclosure button in the modern v2 revision (2026-10-28), replacing the earlier accepted wrapping links.
 - Store run has browser coverage rather than a dedicated unit suite.
 - Previously accepted domain minors (creative edits clearing updateReason; reverting pending content leaving updatePending; missing explicit tests for non-confirmed recordInstructions refusal and updateReason clearing on approval) were partly addressed by Feature 06's pending-review rules but were not re-audited.
 - Human handoffs still open: manual screen-reader spot check, real browser 200% zoom (only a CSS-zoom approximation is automated), non-Chromium browsers, presenter-laptop install/build/preview, and a non-builder teammate rehearsal recorded in the `DEMO.md` handoff table.

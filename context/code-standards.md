@@ -67,6 +67,8 @@ Feature 08 update (2026-10-28): `CouncilOverviewPanel.tsx` renders `councilOverv
 
 Vinta theme (2026-10-28): all colour, type, and spacing live in `tokens.css` (`--vinta-*` palette plus text-safe accent/link/status tokens); `base.css` holds the band (inline SVG data-URI pseudo-elements), pill buttons, flat cards, and the role-area colour via `data-area` on `.app-shell` (derived from the actor role, no new state). Decorative SVGs are `aria-hidden` and `focusable="false"` and use `.sail-*` classes, never hex literals in TSX. `FigureText` in `CouncilOverviewPanel.tsx` splits the leading numeral for large-figure styling without changing text.
 
+Modern revision (2026-10-28): the phone Menu disclosure in `App.tsx` is UI-only state; it resets during render when the route or persona key changes (no setState in effects) and handles Escape only when focus is inside the header.
+
 Feature 09 update (2026-10-28): no production changes. `journeys.spec.ts` and `a11y-responsive.spec.ts` share helpers in `tests/e2e/support.ts`. Two tests seed browser state through the saved `ccz-demo:v1` envelope (`page.evaluate` + reload) where the UI cannot reach the state directly; no production test hook exists.
 
 ## Naming
@@ -128,7 +130,7 @@ No telemetry or remote logging. `console` output is limited to development warni
 
 ## Performance
 
-- Keep the production bundle small (target under 200 KB gzipped JS, PROPOSED). Current: about 134.5 KB gzipped JS and 4.8 KB gzipped CSS (Features 01–09 plus the vinta theme). No images or fonts beyond inline SVG icons.
+- Keep the production bundle small (target under 200 KB gzipped JS, PROPOSED). Current: about 134.8 KB gzipped JS and 6.0 KB gzipped CSS (Features 01–09 plus the modern vinta theme). No images or fonts beyond inline SVG icons.
 - Code-split by role area only if the bundle target is exceeded.
 
 ## Accessibility
@@ -145,9 +147,9 @@ Features 01–09 verified on 2026-10-28 (Windows development workstation) on bra
 | `npm run typecheck` | `tsc --noEmit`, strict | exit 0 |
 | `npm run lint` | ESLint with typescript-eslint and react-hooks rules | exit 0 |
 | `npm test` | Vitest unit tests, single run | 180 passed (16 files) |
-| `npm run build` | Typecheck, then static build to `dist/` | exit 0; 134.51 KB gzipped JS, 4.80 KB gzipped CSS (vinta theme, 2026-10-28) |
+| `npm run build` | Typecheck, then static build to `dist/` | exit 0; 134.75 KB gzipped JS, 5.95 KB gzipped CSS (modern vinta theme, 2026-10-28) |
 | `npm run preview` | Serves `dist/` locally (demo fallback) | used by the e2e run; separately served on port 4195 with local relative assets only (development workstation, not the presenter laptop) |
-| `npm run test:e2e` | Playwright (Chromium), which builds and serves `dist/` | 81 passed (9 files; rerun after the vinta theme on 2026-10-28) with `PLAYWRIGHT_PORT`; two consecutive verifier runs also 81/81, no flakes. Includes main/alternate journeys, exception paths, axe on every route, overflow at 320/360/768/1280 px, keyboard-only runs, CSS-zoom 200% approximation, and an external-request guard |
+| `npm run test:e2e` | Playwright (Chromium), which builds and serves `dist/` | 82 passed (9 files; modern vinta theme with phone-menu test, 2026-10-28) with `PLAYWRIGHT_PORT`; two consecutive verifier runs also 81/81, no flakes. Includes main/alternate journeys, exception paths, axe on every route, overflow at 320/360/768/1280 px, keyboard-only runs, CSS-zoom 200% approximation, and an external-request guard |
 | `git diff --check` | Whitespace errors | exit 0 |
 
 Chromium needs a one-time install: `npx playwright install chromium` on each machine that runs the browser suite. Manual screen-reader testing, real browser 200% zoom, non-Chromium browsers, and the presenter-laptop run remain unverified.

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HashRouter, Link, NavLink, Outlet, Route, Routes, useLocation } from 'react-router';
 import { DemoControls } from './demo/DemoControls';
 import { AccessDenied, Button, PageHeader } from './components/ui';
@@ -45,6 +45,29 @@ function Layout() {
   const { actor, persona, notice, dismissNotice } = useDemo();
   const location = useLocation();
 
+  // Phone menu state (UI only). Any route or persona change closes it, including Back/Forward to a page where it was open.
+  const menuKey = `${location.pathname}${location.search}|${persona.id}`;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuKeySeen, setMenuKeySeen] = useState(menuKey);
+  if (menuKeySeen !== menuKey) {
+    setMenuKeySeen(menuKey);
+    setMenuOpen(false);
+  }
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const header = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      // Only Escape pressed within the header closes the menu, so focus elsewhere on the page is never moved.
+      if (event.key !== 'Escape' || !(event.target instanceof Node) || !header.current?.contains(event.target)) return;
+      setMenuOpen(false);
+      menuButton.current?.focus();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
+
   useEffect(() => {
     const requestedFocus = new URLSearchParams(location.search).get('focus');
     const targetId = location.pathname === '/apply' ? INTAKE_FOCUS_TARGETS[requestedFocus ?? ''] : undefined;
@@ -64,7 +87,7 @@ function Layout() {
         Skip to main content
       </a>
       <DemoControls />
-      <header className="site-header">
+      <header className="site-header" ref={header}>
         <div className="wordmark">
           <a href="#/">
             <svg className="sail-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
@@ -78,7 +101,17 @@ function Layout() {
           <span>Proposed service concept for the Zamboanga City Creative Council — not an official council site</span>
           <span className="prototype-marker">Prototype · fictional data</span>
         </div>
-        <nav aria-label="Main">
+        <button
+          type="button"
+          className="menu-toggle"
+          ref={menuButton}
+          aria-expanded={menuOpen}
+          aria-controls="primary-nav"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          Menu
+        </button>
+        <nav aria-label="Main" id="primary-nav" className={menuOpen ? 'is-open' : undefined}>
           <ul className="nav-list">
           {NAV[actor.role].map((item) => {
             const isCoordinatorDestination = actor.role === 'coordinator' && item.to.startsWith('/coordinator');

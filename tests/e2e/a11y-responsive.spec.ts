@@ -241,3 +241,49 @@ test('key routes stay free of horizontal overflow and serious axe issues at 200%
     }
   }
 });
+
+// Phone menu: below 900px the navigation sits behind a Menu disclosure button. At 900px and up the nav is always visible.
+test('phone menu opens with a click or Enter, closes on Escape with focus returned, closes after navigation, and is hidden on desktop', async ({ page }) => {
+  await seedPersona(page, 'council');
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto('./#/council');
+  await expect(page.locator('main h1')).toBeVisible();
+  const menu = page.getByRole('button', { name: 'Menu' });
+  const referrals = page.getByRole('link', { name: 'Referrals' });
+  await expect(menu).toHaveAttribute('aria-expanded', 'false');
+  await expect(referrals).toBeHidden();
+
+  await menu.click();
+  await expect(menu).toHaveAttribute('aria-expanded', 'true');
+  await expect(referrals).toBeVisible();
+  expect(await serious(page), 'open phone menu at 360px').toEqual([]);
+
+  await page.keyboard.press('Escape');
+  await expect(menu).toHaveAttribute('aria-expanded', 'false');
+  await expect(menu).toBeFocused();
+  await expect(referrals).toBeHidden();
+
+  await page.keyboard.press('Enter');
+  await expect(menu).toHaveAttribute('aria-expanded', 'true');
+  await referrals.click();
+  await expect(page).toHaveURL(/#\/council\/referrals/);
+  await expect(menu).toHaveAttribute('aria-expanded', 'false');
+  await expect(referrals).toBeHidden();
+
+  // Going Back to the page where the menu was open does not reopen it.
+  await page.goBack();
+  await expect(page).toHaveURL(/#\/council$/);
+  await expect(menu).toHaveAttribute('aria-expanded', 'false');
+
+  // Escape pressed outside the header leaves the open menu and the page focus alone.
+  await menu.click();
+  const search = page.getByRole('textbox').first();
+  await search.focus();
+  await page.keyboard.press('Escape');
+  await expect(search).toBeFocused();
+  await expect(menu).toHaveAttribute('aria-expanded', 'true');
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(menu).toBeHidden();
+  await expect(referrals).toBeVisible();
+});

@@ -1,8 +1,18 @@
-/* Base styles. Mobile first. No horizontal scroll at 320px. Flat surfaces, no blur or filters, CSS-only decoration. */
+/* Base styles (v2 modern). Mobile first. No horizontal scroll at 320px. Flat surfaces, no blur or filters, CSS-only decoration. */
+
+/* Vinta band: hard-stop diagonal triangles in 96px segments (inline SVG, no request). Used by the header, hero and footer. */
+:root {
+  --band-art: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 576 10%27 preserveAspectRatio=%27none%27%3E%3Cpath fill=%27%23FE4800%27 d=%27M0 0L96 10L0 10Z%27/%3E%3Cpath fill=%27%23008735%27 d=%27M0 0H96V10Z%27/%3E%3Cpath fill=%27%23FEBA00%27 d=%27M96 0L192 10L96 10Z%27/%3E%3Cpath fill=%27%23007ED5%27 d=%27M96 0H192V10Z%27/%3E%3Cpath fill=%27%23008735%27 d=%27M192 0L288 10L192 10Z%27/%3E%3Cpath fill=%27%23FEBA00%27 d=%27M192 0H288V10Z%27/%3E%3Cpath fill=%27%23007ED5%27 d=%27M288 0L384 10L288 10Z%27/%3E%3Cpath fill=%27%23FE4800%27 d=%27M288 0H384V10Z%27/%3E%3Cpath fill=%27%23FE4800%27 d=%27M384 0L480 10L384 10Z%27/%3E%3Cpath fill=%27%23FEBA00%27 d=%27M384 0H480V10Z%27/%3E%3Cpath fill=%27%23008735%27 d=%27M480 0L576 10L480 10Z%27/%3E%3Cpath fill=%27%23007ED5%27 d=%27M480 0H576V10Z%27/%3E%3C/svg%3E");
+}
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html {
+  scroll-padding-top: 0;
 }
 
 html,
@@ -29,27 +39,28 @@ h3 {
   margin: 0 0 var(--space-3);
 }
 
-h1,
-h2 {
-  letter-spacing: var(--tracking-heading);
-}
-
+/* Page titles: heavy, tight, large. */
 h1 {
   font-size: var(--text-2xl);
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.05;
 }
 
 h2 {
   font-size: var(--text-xl);
+  letter-spacing: var(--tracking-heading);
 }
 
 h3 {
-  font-size: var(--text-lg);
+  font-size: 1.125rem;
 }
 
 p {
   margin: 0 0 var(--space-3);
 }
 
+/* Inline links in body text keep a thin underline. Card and nav links set their own treatment. */
 a {
   color: var(--color-link);
   text-decoration: underline;
@@ -96,11 +107,11 @@ a {
   top: var(--space-2);
 }
 
-/* Demo controls: collapsed to one right-aligned dashed pill (44px); expanded it opens as a dashed panel. Never the vinta palette. */
+/* Demo controls: a slim dashed purple pill above the header. Never the vinta palette. */
 .demo-bar {
   display: flex;
   justify-content: flex-end;
-  margin: var(--space-2) var(--space-4) var(--space-2);
+  margin: var(--space-2) var(--space-4);
   font-size: var(--text-sm);
 }
 
@@ -161,47 +172,63 @@ a {
   --area: var(--area-council);
 }
 
-/* Header: one white bar with a 1px divider. Mobile: brand, one muted line (subtitle and marker wrap together), the nav
-   as text links, then the persona line. From 900px the brand, marker and persona share the top row; the nav takes its own
-   full row until 1150px, where it moves to the right of the top row. Top padding clears the 8-10px band. */
+/* Header: one white bar with a hairline. Mobile stacks brand (with its muted line), the segmented nav, and the persona line.
+   From 900px the header is sticky. Its context row (subtitle, prototype pill, persona) sits beneath the brand and nav. */
 .site-header {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: "brand" "nav" "persona";
-  gap: 2px 0;
-  padding: calc(var(--band-header) + var(--space-1)) var(--space-4) var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: calc(var(--band-header) + 8px) var(--space-4) 8px;
   border-bottom: 1px solid var(--color-divider);
   background: var(--color-surface);
 }
 
+.site-header::before,
+.site-footer::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--band-header);
+  background: var(--band-art) 0 0 / 576px 100% repeat-x;
+}
+
+/* Phones: the wordmark is flattened so its parts order into the header flow: brand row, nav track, then one context row. */
 .wordmark {
-  grid-area: brand;
-  min-width: 0;
+  display: contents;
 }
 
 .wordmark > a {
+  order: 1;
   display: flex;
-  width: fit-content;
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  line-height: 1.2;
   align-items: center;
   gap: var(--space-2);
-  font-weight: 700;
-  font-size: var(--text-base);
+  font-size: var(--text-lg);
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--color-ink);
   text-decoration: none;
 }
 
 .wordmark > span:not(.prototype-marker) {
+  order: 3;
   display: inline;
   font-size: 0.875rem;
-  line-height: 1.35;
+  line-height: 1.3;
   color: var(--color-ink-muted);
 }
 
 /* Original sail mark (four corner triangles in App.tsx). Decorative: the wordmark text carries the name. */
 .sail-mark {
-  width: 1.5em;
-  height: 1.5em;
+  width: 1.4em;
+  height: 1.4em;
   flex: none;
 }
 
@@ -211,83 +238,155 @@ a {
 .sail-blue { fill: var(--vinta-blue); }
 
 .prototype-marker {
+  order: 3;
   display: inline-block;
-  margin-left: var(--space-2);
+  margin-left: 0;
   padding: 0 var(--space-2);
   border: 1px dashed var(--color-demo);
-  border-radius: var(--radius);
+  border-radius: 999px;
   color: var(--color-demo);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  line-height: 1.5;
+  line-height: 1.6;
   white-space: nowrap;
 }
 
+/* Phone menu: a 44px pill with a CSS three-bar icon. The nav stays hidden (no focusable links) until the menu is opened. */
+.menu-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  order: 1;
+  min-height: var(--tap-min);
+  margin-left: auto;
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.menu-toggle::before {
+  content: '';
+  width: 16px;
+  height: 12px;
+  background:
+    linear-gradient(var(--color-ink), var(--color-ink)) 0 0 / 16px 2px no-repeat,
+    linear-gradient(var(--color-ink), var(--color-ink)) 0 50% / 16px 2px no-repeat,
+    linear-gradient(var(--color-ink), var(--color-ink)) 0 100% / 16px 2px no-repeat;
+}
+
+.menu-toggle[aria-expanded='true'] {
+  background: var(--color-track);
+}
+
 .site-header > nav {
-  grid-area: nav;
+  display: none;
+  order: 2;
+  width: 100%;
   min-width: 0;
 }
 
-.nav-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
+.site-header > nav.is-open {
+  display: block;
 }
 
-/* Text links, not boxes. The 44px tap height is kept. The active destination gets a 4px area-colour underline bar
-   (with a 1px ink edge, so its shape is at least 3:1 even in yellow) and bold ink text. */
+@media (max-width: 899px) {
+  .site-header > nav.is-open .nav-list {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .site-header > nav.is-open .nav-link {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* Segmented pill navigation: a grey track holding the links. The active link is a white raised pill with bold ink text
+   and an area-colour dot, so the state reads from shape and weight, not colour alone. */
+.nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .nav-link {
   position: relative;
   display: inline-flex;
+  white-space: nowrap;
+  background: var(--color-track);
   align-items: center;
+  gap: 8px;
   min-height: var(--tap-min);
-  padding: 0 var(--space-1);
+  padding: 0 var(--space-3);
+  border-radius: 999px;
   color: var(--color-ink);
-  text-decoration: none;
   font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
 }
 
 .nav-link:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
-  text-decoration-thickness: 1px;
+  background: var(--color-divider);
+}
+
+/* Focus inside the track, so the scroller never clips the ring. */
+.nav-link:focus-visible {
+  outline-offset: -5px;
+  box-shadow: none;
 }
 
 .nav-link.is-active {
+  background: var(--color-surface);
   font-weight: 700;
+  box-shadow: 0 1px 2px rgb(43 46 50 / 12%), 0 0 0 1px var(--color-ring);
 }
 
-.nav-link.is-active::after {
-  content: "";
-  position: absolute;
-  left: var(--space-1);
-  right: var(--space-1);
-  bottom: 6px;
-  height: 4px;
-  border-radius: 2px;
+.nav-link.is-active::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: var(--area);
   box-shadow: 0 0 0 1px var(--color-ink);
+  flex: none;
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--color-ink-muted);
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .persona {
-  grid-area: persona;
+  order: 3;
   margin: 0;
   font-size: 0.875rem;
-  line-height: 1.35;
+  line-height: 1.3;
   color: var(--color-ink-muted);
 }
 
 @media (min-width: 900px) {
   .site-header {
+    display: grid;
     grid-template-columns: auto auto minmax(0, 1fr) auto;
-    grid-template-areas: "brand marker . persona" "sub sub sub sub" "nav nav nav nav";
+    grid-template-areas: "brand marker . persona" "nav nav nav nav" "sub sub sub sub";
     align-items: center;
-    column-gap: var(--space-4);
-    row-gap: var(--space-1);
-    padding: calc(var(--band-header) + var(--space-2)) var(--space-5) var(--space-3);
+    column-gap: var(--space-5);
+    row-gap: 6px;
+    min-height: var(--header-h);
+    padding: calc(var(--band-header) + 10px) var(--space-5) 12px;
   }
 
   .wordmark {
@@ -313,44 +412,68 @@ a {
   }
 
   .site-header > nav {
+    display: block;
+    grid-area: nav;
     justify-self: start;
+    order: 0;
+    width: auto;
   }
 
-  .persona {
-    justify-self: end;
+  .menu-toggle {
+    display: none;
+  }
+
+  .nav-list {
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 4px;
+    background: var(--color-track);
+    border-radius: 999px;
   }
 
   .nav-link {
-    padding: 0 var(--space-2);
+    background: transparent;
+  }
+
+  .nav-link:hover {
+    background: rgb(255 255 255 / 70%);
+  }
+
+  .persona {
+    grid-area: persona;
+    justify-self: end;
   }
 }
 
 @media (min-width: 1150px) {
   .site-header {
-    grid-template-areas: "brand marker . nav" "sub sub . persona";
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "brand marker . nav" "sub sub sub persona";
   }
 
   .site-header > nav {
+    grid-area: nav;
     justify-self: end;
+  }
+
+  html {
+    scroll-padding-top: var(--sticky-header-offset);
   }
 }
 
-/* Vinta bands: sails as hard-stop diagonal triangles in large 96px segments (inline SVG, no request).
-   Absolutely placed at the page edge so they never sit behind text. */
-.site-header,
 .site-footer {
   position: relative;
-}
-
-.site-header::before,
-.site-footer::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: var(--band-header);
-  background: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 576 10%27 preserveAspectRatio=%27none%27%3E%3Cpath fill=%27%23FE4800%27 d=%27M0 0L96 10L0 10Z%27/%3E%3Cpath fill=%27%23008735%27 d=%27M0 0H96V10Z%27/%3E%3Cpath fill=%27%23FEBA00%27 d=%27M96 0L192 10L96 10Z%27/%3E%3Cpath fill=%27%23007ED5%27 d=%27M96 0H192V10Z%27/%3E%3Cpath fill=%27%23008735%27 d=%27M192 0L288 10L192 10Z%27/%3E%3Cpath fill=%27%23FEBA00%27 d=%27M192 0H288V10Z%27/%3E%3Cpath fill=%27%23007ED5%27 d=%27M288 0L384 10L288 10Z%27/%3E%3Cpath fill=%27%23FE4800%27 d=%27M288 0H384V10Z%27/%3E%3Cpath fill=%27%23FE4800%27 d=%27M384 0L480 10L384 10Z%27/%3E%3Cpath fill=%27%23FEBA00%27 d=%27M384 0H480V10Z%27/%3E%3Cpath fill=%27%23008735%27 d=%27M480 0L576 10L480 10Z%27/%3E%3Cpath fill=%27%23007ED5%27 d=%27M480 0H576V10Z%27/%3E%3C/svg%3E") 0 0 / 576px 100% repeat-x;
+  padding: var(--space-5) var(--space-4) calc(var(--space-5) + var(--band-footer));
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--color-ink-muted);
+  text-align: center;
+  border-top: 1px solid var(--color-divider);
 }
 
 .site-footer::after {
@@ -360,48 +483,42 @@ a {
   background-position: 48px 0;
 }
 
-@media (max-width: 639px) {
-  .site-header::before {
-    height: 8px;
-  }
-}
-
-.site-footer {
-  padding: var(--space-4) var(--space-4) calc(var(--space-4) + var(--band-footer));
-  font-size: var(--text-sm);
-  color: var(--color-ink-muted);
-  text-align: center;
-  border-top: 1px solid var(--color-divider);
-}
-
 main {
-  max-width: var(--content-max);
+  max-width: var(--reading-max);
   margin: 0 auto;
-  padding: var(--space-5) var(--space-4) var(--space-7);
+  padding: var(--space-6) var(--space-4) var(--space-8);
+}
+
+/* Reading pages and forms stay in a ~44rem column. Lists and overview pages use the full container. */
+main:has(.public-grid, .card-list, .coordinator-stack, .overview-panel, .record-list, .queue-list, .referral-list) {
+  max-width: var(--content-max);
 }
 
 .page-header {
   margin-bottom: var(--space-5);
 }
 
-/* Screen ID: a tiny muted uppercase label with letter spacing. */
+/* Eyebrow row: a small area-colour sail and the screen ID as a quiet chip. */
 .view-id {
-  margin: 0 0 var(--space-2);
-  font-size: var(--text-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  background: var(--color-track);
+  font-size: var(--text-eyebrow);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-ink-muted);
   font-variant-numeric: tabular-nums;
 }
 
-/* Role-area marker: a small sail (right triangle with a vertical mast edge) in the area colour, on the cap height. */
-.page-header h1::before {
+.view-id::before {
   content: '';
-  display: inline-block;
-  width: 0.55em;
-  height: 0.7em;
-  margin-right: 0.4em;
+  width: 11px;
+  height: 11px;
   background: var(--area);
   clip-path: polygon(0 0, 0 100%, 100% 100%);
 }
@@ -412,42 +529,72 @@ main {
 
 .placeholder {
   background: var(--color-surface);
-  border: 1px solid var(--color-divider);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
+  box-shadow: 0 0 0 1px var(--color-ring);
 }
 
-.coordinator-stack { display: grid; gap: var(--space-4); }
+.coordinator-stack { display: grid; gap: var(--space-5); }
 .coordinator-summary, .coordinator-section-heading, .queue-title, .record-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.coordinator-summary { flex-wrap: wrap; background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-3); }
+.coordinator-summary { flex-wrap: wrap; background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-4); box-shadow: 0 0 0 1px var(--color-ring); }
 .coordinator-summary p, .coordinator-section-heading p { margin: 0; }
-.coordinator-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.coordinator-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); align-items: start; }
 .coordinator-search { display: flex; align-items: end; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-3); }
-.coordinator-record-list, .notification-list { list-style: none; padding: 0; margin: var(--space-3) 0; display: grid; gap: var(--space-2); }
-.coordinator-record-list li, .notification-list li { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); border-bottom: 1px solid var(--color-divider); padding: var(--space-2) 0; }
+.coordinator-record-list, .notification-list { list-style: none; padding: 0; margin: var(--space-3) 0; display: grid; gap: 2px; }
+.coordinator-record-list li, .notification-list li { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); border-bottom: 1px solid var(--color-divider); padding: var(--space-3) 0; }
+.coordinator-record-list li > a:first-child,
+.record-list li > a,
+.card-list > li > h2 > a {
+  color: var(--color-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.coordinator-record-list li > a:first-child:hover,
+.coordinator-record-list li > a:first-child:focus-visible,
+.record-list li > a:hover,
+.record-list li > a:focus-visible,
+.card-list > li > h2 > a:hover,
+.card-list > li > h2 > a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.coordinator-record-list li > span {
+  margin-left: auto;
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+
+.coordinator-record-list li:hover,
+.notification-list li:hover {
+  background: var(--color-track);
+  border-radius: var(--radius);
+}
+
 .coordinator-record-list small { display: block; color: var(--color-ink-muted); }
 .notification-list time, .queue-meta { color: var(--color-ink-muted); font-size: var(--text-sm); }
 .queue-list { display: grid; gap: var(--space-3); }
 .record-list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: var(--space-3); }
 .record-list li { min-width: 0; border-top: 1px solid var(--color-divider); padding-top: var(--space-3); overflow-wrap: anywhere; }
 .comparison-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
-.comparison-grid > div { min-width: 0; border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-3); overflow-wrap: anywhere; }
+.comparison-grid > div { min-width: 0; border-radius: var(--radius-lg); padding: var(--space-4); background: var(--tint-blue); overflow-wrap: anywhere; }
 .comparison-grid h3 { margin-top: 0; }
-.queue-item { border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-3); min-width: 0; }
+.queue-item { border-radius: var(--radius-lg); padding: var(--space-4); min-width: 0; background: var(--color-surface); box-shadow: 0 0 0 1px var(--color-ring); }
 .queue-item h3, .queue-item p { margin-top: 0; }
 .queue-meta { display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-3); }
 .queue-meta div { min-width: 0; }
 .queue-meta dt { font-weight: 600; }
 .queue-meta dd { margin: 0; overflow-wrap: anywhere; }
-.conflict-diff { border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-3); margin: var(--space-3) 0; }
+.conflict-diff { border-radius: var(--radius-lg); padding: var(--space-4); margin: var(--space-3) 0; background: var(--tint-orange); }
 .conflict-row { display: grid; grid-template-columns: minmax(7rem, .6fr) repeat(2, minmax(0, 1fr)); gap: var(--space-3); border-top: 1px solid var(--color-divider); padding: var(--space-2) 0; }
 .conflict-row p { margin: var(--space-1) 0 0; overflow-wrap: anywhere; }
 .conflict-row span { font-size: var(--text-sm); color: var(--color-ink-muted); }
 .referral-list { display: grid; gap: var(--space-3); }
 .referral-list article { border-top: 1px solid var(--color-divider); padding-top: var(--space-3); }
-.relay-form { display: grid; gap: var(--space-2); margin-top: var(--space-3); }
+.relay-form { display: grid; gap: var(--space-3); margin-top: var(--space-3); }
 .check-field { display: flex; align-items: flex-start; gap: var(--space-2); min-height: var(--tap-min); }
-.check-field input { margin-top: .35rem; }
+.check-field input { margin-top: 0.3rem; }
 
 @media (max-width: 640px) {
   .coordinator-columns, .comparison-grid { grid-template-columns: 1fr; }
@@ -457,31 +604,25 @@ main {
   .queue-meta { grid-template-columns: 1fr; }
 }
 
-/* Buttons: pill shape, 44px minimum. Primary is the green accent with white text; secondary has a 2px dark outline. */
+/* Buttons: pills. Primary actions are 48px tall (green on light, yellow on the dark hero). Everything else 44px minimum. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-2);
   min-height: var(--tap-min);
-  padding: var(--space-2) var(--space-5);
-  border-radius: 999px;
+  padding: 10px var(--space-5);
   border: 2px solid transparent;
+  border-radius: 999px;
   font: inherit;
   font-weight: 600;
+  text-align: center;
   text-decoration: none;
   cursor: pointer;
-  text-align: center;
-}
-
-/* Disabled: a neutral fill and muted ink, not opacity, so the text stays legible and is not mistaken for an active control. */
-.btn:disabled {
-  background: var(--color-hover);
-  border-color: var(--color-border);
-  color: var(--color-ink-muted);
-  cursor: not-allowed;
 }
 
 .btn-primary {
+  min-height: var(--control-min);
   background: var(--color-accent);
   border-color: var(--color-accent);
   color: var(--color-accent-ink);
@@ -508,11 +649,16 @@ main {
   border-color: var(--tone-success-ink);
 }
 
-.btn-quiet {
+.btn-quiet,
+.text-button {
   background: transparent;
+  border: 0;
+  padding: var(--space-2);
   color: var(--color-link);
+  font: inherit;
   text-decoration: underline;
   text-underline-offset: 0.2em;
+  cursor: pointer;
 }
 
 .btn-danger {
@@ -521,13 +667,21 @@ main {
   color: #ffffff;
 }
 
-/* Form controls. */
+/* Disabled: a neutral fill and muted ink, not opacity, so the text stays legible. */
+.btn:disabled {
+  background: var(--color-hover);
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
+  cursor: not-allowed;
+}
+
+/* Forms: 48px inputs, 12px radius, white fill, a 3:1 border, labels at 600. */
 select,
 input,
 textarea {
   font: inherit;
-  min-height: var(--tap-min);
-  padding: var(--space-2) var(--space-3);
+  min-height: var(--control-min);
+  padding: 12px 14px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-surface);
@@ -535,20 +689,99 @@ textarea {
   max-width: 100%;
 }
 
+input[type='checkbox'],
+input[type='radio'] {
+  min-height: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  accent-color: var(--color-accent);
+}
+
+textarea {
+  min-height: 6rem;
+}
+
+/* Fieldsets carry no box. The legend reads like a field label. */
+fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-weight: 600;
+}
+
 .field-inline {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 6px;
+  font-weight: 600;
 }
 
-/* Status and notices. Colour is never the only signal: each badge carries text. Badges are pills. */
-.badge {
-  display: inline-block;
-  padding: var(--space-1) var(--space-3);
-  border-radius: 999px;
+.field-inline select,
+.field-inline input,
+.field-inline textarea {
+  font-weight: 400;
+}
+
+.field-hint {
   font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-ink-muted);
+}
+
+.choice-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.choice-row:hover {
+  background: var(--color-track);
+}
+
+.intake-fieldset .choice-row {
+  border-bottom: 1px solid rgb(43 46 50 / 10%);
+  border-radius: 0;
+}
+
+.intake-fieldset .choice-row:last-child {
+  border-bottom: 0;
+}
+
+.check-field {
+  font-weight: 400;
+}
+
+/* Status: soft pills with a leading dot in the tone ink. The words stay the same. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.4;
+}
+
+.badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
 }
 
 .badge-info,
@@ -583,8 +816,8 @@ textarea {
 
 .notice {
   border-radius: var(--radius-lg);
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
 }
 
 .notice-title {
@@ -621,7 +854,7 @@ textarea {
 .dialog {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  padding: var(--space-5);
+  padding: var(--space-6);
   max-width: 28rem;
   width: 100%;
 }
@@ -633,13 +866,18 @@ textarea {
   justify-content: flex-end;
 }
 
-/* Hover colour transitions only, 120 ms, and only when the user has not asked for reduced motion. The transition is set on
-   the hover state alone, so route and state changes stay instant. */
+/* Motion: colour transitions on hover only (120 ms), and a 2px whole-card lift (150 ms). Both only without reduced motion. */
 @media (prefers-reduced-motion: no-preference) {
   .btn:hover,
   .nav-link:hover,
   .step-button:hover {
     transition: background-color 120ms ease-out, color 120ms ease-out, border-color 120ms ease-out;
+  }
+
+  .public-grid > .public-card:has(> a):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 1px var(--color-ring), 0 2px 0 rgb(43 46 50 / 5%);
+    transition: transform 150ms ease-out, box-shadow 150ms ease-out;
   }
 }
 
@@ -655,145 +893,91 @@ textarea {
     padding-left: var(--space-5);
     padding-right: var(--space-5);
   }
-
-  .public-stack {
-    gap: var(--space-7);
-  }
 }
 
-@media (min-width: 960px) {
-  main {
-    max-width: 56rem;
-  }
-
-  .public-grid:has(> :nth-child(3):last-child) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.prototype-marker:focus-visible {
+  outline-offset: 2px;
 }
 
-.app-shell[data-area='council'] main {
-  max-width: 72rem;
-}
-
+/* Section gaps: 48px on phones, 80px on desktop. */
 .public-stack,
 .card-list {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-7);
   min-width: 0;
-}
-
-/* Section gaps: 32 px on mobile, 48 px on desktop. */
-.public-stack {
-  gap: var(--space-6);
 }
 
 .card-list {
   list-style: none;
   margin: 0;
   padding: 0;
-}
-
-.public-card {
-  min-width: 0;
-  padding: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-lg);
-}
-
-/* Hero: no card. Large display heading, a muted supporting sentence, the two buttons. A sail composition sits on the right from 1024px. */
-.welcome-panel {
-  min-width: 0;
-  display: grid;
   gap: var(--space-4);
-  padding: var(--space-4) 0 0;
 }
 
-.welcome-panel h2 {
-  max-width: 19ch;
-  font-size: clamp(2.25rem, 1.5rem + 3.2vw, 3rem);
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-}
-
-.welcome-panel > p:not(.eyebrow) {
-  max-width: 36rem;
-  font-size: 1.1875rem;
-  line-height: 1.5;
-  color: var(--color-ink-muted);
-}
-
-.welcome-panel .action-row {
-  margin-bottom: 0;
-}
-
-.hero-sail {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .welcome-panel {
-    grid-template-columns: minmax(0, 1fr) 200px;
-    column-gap: var(--space-6);
-    align-items: center;
-  }
-
-  .hero-sail {
-    display: block;
-    grid-column: 2;
-    grid-row: 1 / span 4;
-    width: 200px;
-    height: 200px;
-  }
-}
-
-.page-header:has(+ .public-stack > .welcome-panel) h1 {
-  font-size: var(--text-xl);
-}
-
-.welcome-panel .eyebrow {
-  margin-bottom: var(--space-3);
-}
-
-.eyebrow {
-  margin: 0 0 var(--space-2);
-  color: var(--color-ink-muted);
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
-/* Option and guidance cards. Each card has a small sail notch in a corner, the only colour on the card. */
-.public-grid {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.public-grid > .public-card {
+/* Cards: borderless white, 20px radius, a near-invisible ring. */
+.public-card {
   position: relative;
-  --notch: var(--vinta-blue);
+  min-width: 0;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 1px var(--color-ring);
 }
 
-.public-grid > .public-card:nth-child(4n + 2) {
-  --notch: var(--vinta-orange);
+/* Whole-card links: the existing link covers the card through its own ::before (no nested interactive elements).
+   The arrow is a CSS background, so it adds nothing to the link's accessible name. */
+.public-grid > .public-card > a {
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.public-grid > .public-card:nth-child(4n + 3) {
-  --notch: var(--vinta-green);
-}
-
-.public-grid > .public-card:nth-child(4n + 4) {
-  --notch: var(--vinta-yellow);
-}
-
-.public-grid > .public-card::before {
+.public-grid > .public-card > a::before {
   content: '';
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 22px;
-  height: 22px;
-  background: var(--notch);
-  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  inset: 0;
+  border-radius: inherit;
+}
+
+.public-grid > .public-card > a::after {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  vertical-align: -3px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath d=%27M3 8h9M9 4l4 4-4 4%27 fill=%27none%27 stroke=%27%230067B1%27 stroke-width=%271.7%27/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.public-grid > .public-card > a:focus-visible {
+  outline-offset: 3px;
+}
+
+/* Bento: the three-card group has a full-width first tile and two half tiles at desktop. Tiles carry palette tints. */
+.public-grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.public-grid > .public-card:nth-child(4n + 1) { background: var(--tint-blue); }
+.public-grid > .public-card:nth-child(4n + 2) { background: var(--tint-orange); }
+.public-grid > .public-card:nth-child(4n + 3) { background: var(--tint-green); }
+.public-grid > .public-card:nth-child(4n + 4) { background: var(--tint-yellow); }
+
+.public-grid > .public-card h3 {
+  font-size: 1.25rem;
+  letter-spacing: var(--tracking-heading);
+}
+
+.public-card > p:not(:last-child) {
+  max-inline-size: 65ch;
+}
+
+.public-card > p {
+  color: var(--color-ink);
+}
+
+.public-card > p.muted {
+  color: var(--color-ink-muted);
 }
 
 .action-row,
@@ -801,7 +985,7 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .filter-grid {
@@ -815,18 +999,6 @@ textarea {
 .field-inline input,
 .field-inline select {
   width: 100%;
-}
-
-.choice-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--tap-min);
-}
-
-.choice-row input {
-  width: 1.25rem;
-  min-height: 1.25rem;
 }
 
 .detail-list {
@@ -853,23 +1025,6 @@ textarea {
   font-size: var(--text-sm);
 }
 
-.text-button {
-  min-height: var(--tap-min);
-  border: 0;
-  padding: var(--space-2);
-  background: transparent;
-  color: var(--color-link);
-  font: inherit;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-/* Prose inside cards reads at about 65 characters. Tables and form controls are not affected. */
-.public-card > p,
-.public-card li {
-  max-inline-size: 65ch;
-}
-
 .public-card h2,
 .public-card h3,
 .public-card p,
@@ -877,10 +1032,17 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+/* Intake: segmented progress control. Current step is a white raised pill with bold text; the rest sit on the track. */
 .intake-layout {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-5);
   min-width: 0;
+}
+
+.intake-layout > *,
+.intake-stepper {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .intake-layout .public-card {
@@ -891,36 +1053,42 @@ textarea {
 .intake-stepper ol {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  list-style: none;
+  gap: 8px;
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .intake-stepper li {
-  flex: 1 1 10rem;
+  flex: 0 0 auto;
   min-width: 0;
 }
 
 .step-button {
-  width: 100%;
+  width: auto;
   min-height: var(--tap-min);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface);
+  padding: 0 var(--space-4);
+  white-space: nowrap;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-track);
   color: var(--color-ink);
   font: inherit;
-  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: center;
   cursor: pointer;
 }
 
+.step-button:focus-visible {
+  outline-offset: -4px;
+  box-shadow: none;
+}
+
 .step-button.is-current {
-  border-color: var(--color-ink);
-  box-shadow: inset 0 0 0 1px var(--color-ink);
-  background: var(--tone-info-bg);
-  color: var(--color-ink);
-  font-weight: 600;
+  background: var(--color-surface);
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgb(43 46 50 / 12%), 0 0 0 1px var(--color-ring);
 }
 
 .compact-readback {
@@ -966,34 +1134,160 @@ textarea {
     margin-bottom: var(--space-2);
   }
 
-  /* Card grids: two columns from 640px; exactly three cards stay single-column here (no orphan), three across from 960px. */
   .public-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-}
-
-/* Exactly three cards stay single-column between 640 and 767px (no orphan), and go three across from 768px. */
-@media (min-width: 640px) and (max-width: 767.98px) {
+  /* Exactly three cards: single column between 640 and 959px, bento from 960px. */
   .public-grid:has(> :nth-child(3):last-child) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 900px) {
+  .public-stack,
+  .card-list {
+    gap: 80px;
+  }
+}
+
+@media (min-width: 960px) {
   .public-grid:has(> :nth-child(3):last-child) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
+/* Hero (P01): a dark rounded panel with a white display headline, a muted lead, a yellow primary and a white-outline secondary.
+   A layered sail composition sits on the right from 1024px and the vinta band runs along the bottom edge. */
+.page-header:has(+ .public-stack > .welcome-panel) h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
 
-/* Council overview (Feature 08). Tables wrap text; no horizontal scroll at 320px. Each figure leads with a large numeral
-   on its own line and states its denominator and window beneath it. */
+.welcome-panel {
+  position: relative;
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  overflow: hidden;
+  padding: var(--space-6) var(--space-5) calc(var(--space-6) + var(--band-footer));
+  border-radius: var(--radius-hero);
+  background: var(--color-hero);
+  color: #ffffff;
+}
+
+.welcome-panel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--band-footer);
+  background: var(--band-art) 0 0 / 576px 100% repeat-x;
+}
+
+.welcome-panel > :not(.hero-sail) {
+  position: relative;
+}
+
+.welcome-panel h2 {
+  max-width: 17ch;
+  margin: 0;
+  color: #ffffff;
+  font-size: var(--text-hero);
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.02;
+}
+
+.welcome-panel .eyebrow {
+  margin: 0;
+  color: var(--color-hero-lead);
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.welcome-panel > p:not(.eyebrow) {
+  max-width: 34rem;
+  margin: 0;
+  font-size: 1.1875rem;
+  line-height: 1.5;
+  color: var(--color-hero-lead);
+}
+
+.public-stack:has(> .welcome-panel) > .public-card:last-child {
+  background: var(--tint-green);
+}
+
+.welcome-panel .action-row {
+  margin-top: var(--space-2);
+}
+
+.welcome-panel .btn-primary {
+  background: var(--vinta-yellow);
+  border-color: var(--vinta-yellow);
+  color: var(--color-ink);
+}
+
+.welcome-panel .btn-primary:hover:not(:disabled) {
+  background: var(--color-hero-yellow-hover);
+  border-color: var(--color-hero-yellow-hover);
+}
+
+.welcome-panel .btn-secondary {
+  background: transparent;
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.welcome-panel .btn-secondary:hover:not(:disabled) {
+  background: rgb(255 255 255 / 12%);
+}
+
+.hero-sail {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .welcome-panel {
+    min-height: 380px;
+    padding: var(--space-8) var(--space-8) calc(var(--space-8) + var(--band-footer));
+  }
+
+  .welcome-panel > :not(.hero-sail) {
+    max-width: 38rem;
+  }
+
+  .hero-sail {
+    display: block;
+    position: absolute;
+    right: 48px;
+    top: 50%;
+    width: 360px;
+    height: 360px;
+    transform: translateY(-50%);
+  }
+}
+
+/* Council overview (Feature 08). Tables wrap text; no horizontal scroll at 320px. Each figure leads with a large
+   numeral and states its denominator and window beneath it. Blocks are bento tiles on the same page. */
 .synthetic-label {
   margin: 0;
   padding: var(--space-2) var(--space-3);
-  border: 1px dashed var(--color-demo);
-  border-radius: var(--radius);
+  border-radius: 999px;
+  background: var(--tint-yellow);
+  color: var(--color-ink);
+  display: inline-block;
+}
+
+.overview-panel {
+  padding: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .overview-panel > p {
@@ -1002,19 +1296,26 @@ textarea {
 
 .overview-grid {
   display: grid;
-  gap: var(--space-5);
+  align-items: start;
+  gap: var(--space-4);
   grid-template-columns: minmax(0, 1fr);
   margin-top: var(--space-5);
 }
 
 .overview-block {
   min-width: 0;
-  display: flex;
-  flex-direction: column;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-ring);
+}
+
+.overview-block:has(#overview-funnel) {
+  background: var(--tint-yellow);
 }
 
 .overview-block h3 {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .overview-table {
@@ -1024,44 +1325,55 @@ textarea {
   font-variant-numeric: tabular-nums;
 }
 
+/* Modern data table: small uppercase caption, hairline row dividers, generous rows. */
 .overview-table caption {
+  padding-bottom: var(--space-3);
   text-align: left;
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--color-ink-muted);
-  padding-bottom: var(--space-2);
   overflow-wrap: anywhere;
 }
 
 .overview-table th,
 .overview-table td {
+  padding: 12px var(--space-2) 12px 0;
+  border-bottom: 1px solid rgb(43 46 50 / 10%);
   text-align: left;
   vertical-align: top;
-  padding: var(--space-2);
-  border-bottom: 1px solid var(--color-divider);
   overflow-wrap: break-word;
 }
 
+.overview-table tr:last-child > * {
+  border-bottom: 0;
+}
+
 .overview-table th[scope='row'] {
-  width: 40%;
+  width: 42%;
+  font-weight: 500;
 }
 
 /* The header rows repeat per block. Visually hidden, still exposed to assistive technology (sr-only technique). */
-/* Visually hidden but still table cells, so table semantics survive in every engine. */
 .overview-table thead th {
-  height: 0;
-  padding: 0;
-  border: 0;
-  font-size: 0;
-  line-height: 0;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
   overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-/* Inline-block so each part takes its own line while innerText keeps the "N of M" text on one reading line. */
+/* Stat numerals: large, 800 weight, tabular. Each part takes its own line; innerText keeps "N of M" on one reading line. */
 .figure-value {
   display: inline-block;
   width: 100%;
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1.05;
+  font-size: var(--text-figure);
+  font-weight: 800;
+  line-height: 1;
   letter-spacing: -0.02em;
   color: var(--color-ink);
   font-variant-numeric: tabular-nums;
@@ -1070,22 +1382,50 @@ textarea {
 .figure-label {
   display: inline-block;
   width: 100%;
+  margin-top: 4px;
+  font-size: 0.875rem;
   color: var(--color-ink-muted);
-  font-size: var(--text-sm);
 }
 
 .device-count {
   color: var(--color-ink-muted);
 }
 
-@media (min-width: 640px) {
-  .figure-value {
-    font-size: var(--text-figure);
-  }
-}
-
 @media (min-width: 1024px) {
   .overview-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 899px) {
+  .site-header {
+    padding-top: calc(var(--band-header) + 12px);
+  }
+}
+
+/* Desktop intake steps: one track, four-column-equivalent spacing from 640px (labels never wrap inside a step). */
+@media (min-width: 640px) {
+  .intake-stepper ol {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    background: var(--color-track);
+    border-radius: 999px;
+  }
+
+  .intake-stepper li {
+    flex: 1 1 auto;
+  }
+
+  .step-button {
+    width: 100%;
+    background: transparent;
+  }
+}
+
+@media (min-width: 900px) {
+  .site-footer {
+    padding-left: var(--space-5);
+    padding-right: var(--space-5);
   }
 }

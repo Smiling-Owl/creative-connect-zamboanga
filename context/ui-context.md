@@ -31,6 +31,28 @@ A calm, trustworthy public service that helps people, not a marketing site or a 
   - Coordinator: green
   - Council: yellow
 
+### Modern revision (v2) — 2026-10-28
+
+User feedback on the first vinta theme: "right theme, some philosophies right, but it looks old". v2 keeps the palette, tokens, accessibility rules, copy, and low-bandwidth limits, and changes the visual language from a document/form look to a contemporary product look.
+
+What read as "old": narrow centred column floating in grey on desktop, outlined boxes everywhere, underlined links on every card, small wordmark, tiny tables in boxes, and every section having the same visual weight.
+
+v2 rules:
+
+1. **Width and rhythm.** A page container up to 72 rem with 24 px gutters (16 px on phones). Reading text and forms stay in a ~44 rem column; P01, directory, opportunities, coordinator, and council lists use the full container. Section gaps 48 px (phones) to 80 px (desktop).
+2. **Display typography.** Page titles weight 800, `clamp(2rem, 1.4rem + 2.6vw, 3.25rem)`, tracking about −0.03em, line height 1.05. Hero display up to about 4.5 rem. Section headings 700, tracking −0.02em. Eyebrows: 0.8125–0.875 rem, 600, uppercase, letter-spaced, muted (never below 14 px for body copy; the eyebrow screen ID is a label, not body copy, and stays ≥ 13 px and ≥ 4.5:1).
+3. **Header.** One compact white bar (about 100 px including its context row at ≥ 1150 px), sticky only at ≥ 1150 px with `scroll-padding-top` equal to its height plus 16 px (WCAG 2.2 focus not obscured); static below that, hairline bottom border. Wordmark larger (about 1.125 rem, 800). Navigation as a segmented pill group at ≥ 900 px: a light grey track holding the links (below 900 px the navigation sits behind a **Menu** disclosure button in the brand row — `aria-expanded`/`aria-controls`, Escape closes and returns focus, closes after navigation — and opens as a full-width stack of 44 px rows; no hidden horizontal scrolling); the active link is a white raised pill with ink text, bold weight, and a small area-colour dot (shape plus weight plus `aria-current`, never colour alone). The subtitle, prototype pill, and "Viewing as" sit on one quiet context row beneath, ≥ 14 px, muted. Header band 4 px, crisp.
+4. **Surfaces.** Cards are borderless white with a 20 px radius and a near-invisible ring (`0 0 0 1px rgb(43 46 50 / 8%)` plus at most a 1–2 px, low-alpha offset shadow; no large blur). Interactive cards are whole-card links with an arrow ("→") affordance, no underline, and a 150 ms 1–2 px lift on hover (reduced-motion: none). Inline links inside body text keep a thin underline.
+5. **Bento grids.** Groups of entry points or summary figures use a bento grid: mixed spans where content fills them (no mostly-empty tiles; P01's three entry points sit in one row of equal tiles) at desktop, one column on phones. Tiles may use palette tints as backgrounds: orange `#FFF0EB`, green `#EBF5EF`, yellow `#FFF4D6`, blue `#EBF5FC` (ink 12.2–12.5:1, muted ≥ 6.1:1 on each).
+6. **Hero (P01).** A dark rounded hero panel (`#2B2E32`, 24–28 px radius) spanning the container: white display headline, lead text `#C9CDD2` (8.54:1), primary action in vinta yellow with ink text (7.95:1), secondary as a white-outline pill. A bold layered sail composition on the right at ≥ 1024 px (smaller row of sails above the headline on phones is optional). The vinta band runs along the hero's bottom edge. The page h1 stays, small, above the hero.
+7. **Page header (other pages).** Eyebrow row: small area-colour sail + screen ID chip. Then the large page title. No heavy marker beside the h1.
+8. **Forms.** 48 px inputs, 12 px radius, white fill with a ≥ 3:1 border, generous labels (600). Intake steps as a segmented progress control (pills in a track; completed/current states shown by fill, weight, and text, not colour alone).
+9. **Badges.** Soft pills with a leading 8 px dot in the tone ink; text unchanged.
+10. **Data.** Council figures as bento stat tiles: large 800-weight numerals (about 2.25–2.5 rem, tabular), small muted denominators. Tables are modern data tables: no boxed borders, hairline row dividers, generous row height, small uppercase captions. Table semantics stay intact.
+11. **Buttons.** Pills, 48 px tall on primary actions (44 px minimum elsewhere), 600 weight. Primary green `#008434` with white text on light surfaces; yellow with ink text on the dark hero; secondary ink outline; quiet buttons text-only with an arrow where they navigate.
+12. **Demo controls** stay clearly outside the product: a slim dashed purple pill above the header.
+13. **Budget.** Still no images, web fonts, filters, backdrop blur, or external requests. Total CSS ≤ about 7 KB gzipped.
+
 ## Creative classification and location labels
 
 - R01 step 2 uses **Creative domain** (one of the nine RA 11904 domains) followed by **Specific creative practice** (free text, such as video editing). Domain examples help users choose; they are illustrative, not an approved sub-sector list.
@@ -89,7 +111,7 @@ Reuse boundaries (APPROVED): R01/R02 serve both modes; C01 and F02 share timelin
 ## Typography
 
 - System font stack (no web-font download): `system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif`.
-- Body 1.0625 rem (17 px) at line height 1.55; secondary text 0.9375 rem; never below 14 px.
+- Body 1.0625 rem (17 px) at line height 1.55; secondary text 0.9375 rem; never below 14 px, except short uppercase eyebrow labels and screen-ID chips (≥ 13 px, ≥ 4.5:1).
 - Headings 700 weight with slight negative tracking (about −0.01em) at large sizes. Page title `clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem)`; section 1.5 rem; sub-section 1.1875 rem. Body 400.
 - Short headings and one supporting sentence; sentence case labels; tabular figures in tables and counts. Council figures may use large numerals (about 2 rem) with small labels.
 
