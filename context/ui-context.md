@@ -130,6 +130,8 @@ One user-facing label (and one plain sentence) per state, used identically in ev
 | `awaiting_follow_up` | Awaiting follow-up | warning |
 | `cancelled` | Cancelled — see reason | danger |
 
+Council aggregate variants (2026-10-28): M01 reporting reuses the labels above. Only where the canonical label addresses the creative in the second person does the council overview use a neutral variant from `COUNCIL_AGGREGATE_LABEL` in `src/labels.ts`: application declined → "Declined — see reason", referral offered → "Place offered — awaiting creative response", referral declined → "Offer declined by creative". Funnel stage names (for example "Place confirmed") name cumulative stages, not current states.
+
 Copy rules: never "approved for work", "hired", "paid", "income", "certified", "guaranteed", or "official"; say "simulated" wherever an action would involve real credentials, devices, or messages; notifications read "In-app example — no SMS or email is sent".
 
 ## Components / Reuse Principles

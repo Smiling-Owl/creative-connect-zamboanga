@@ -32,27 +32,40 @@ src/
     opportunity.ts         # draft, publish, edit, close, cancel with cascade
     cases.ts               # human review, outcome correction, withdrawal requests
     publicProfile.ts       # allow-listed public projection and directory search
-    selectors.ts           # counts, capacity, persona views, next action, funnel, notices
+    coordinator.ts         # coordinator follow-up notes and consented relays for assigned records
+    selectors.ts           # counts, council overview, capacity, persona views, next action, notices
     *.test.ts              # colocated unit tests
   fixtures/                # fictional baseline data, personas, guidance examples
   state/                   # store and versioned persistence (+ tests)
   components/ui.tsx        # shared primitives (button, badge, notice, dialog with focus trap)
   components/PublicProfileCard.tsx # allow-listed public profile and draft-preview rendering
+  components/ProfileFieldsEditor.tsx # shared profile field editing (C02, council, coordinator)
+  components/NotificationList.tsx    # one labelled in-app notification list for C01, C03, F01, M01
   views/public/           # public discovery and simulated access
-  views/intake/           # shared intake/review and creative application status
+  views/intake/           # shared intake/review, creative status (C01) and referrals (C03)
+  views/coordinator/      # F01 workspace/device queue, F02 assisted record
+  views/council/          # M01 queue + overview panel, M02 review, C02 profile, M03–M05 opportunities/referrals
   demo/DemoControls.tsx    # demo controls outside the product chrome
   styles/                  # tokens.css, base.css
   test/                    # Vitest setup and helpers
-tests/e2e/                 # Playwright shell, public/access, intake/status journeys and accessibility
+tests/e2e/                 # Playwright: shell, public-access, intake, coordinator, council-profile,
+                           # opportunities, overview, journeys (main/alternate/exceptions),
+                           # a11y-responsive (every route), support.ts helpers
 ```
 
-Planned names that changed during implementation: `permissions.ts` became `policy.ts`, and `references.ts` became `core.ts`. Unbuilt views remain explicit placeholders in `App.tsx`. Each feature moves its view into `src/views/<area>/`. Domain modules never import from `state/`, `components/`, or `views/`.
+Planned names that changed during implementation: `permissions.ts` became `policy.ts`, and `references.ts` became `core.ts`. All routes in `routes.ts` now have real views; the placeholder branch in `App.tsx` is unreachable for known routes. Each feature moves its view into `src/views/<area>/`. Domain modules never import from `state/`, `components/`, or `views/`.
 
 Feature 03 update (2026-10-27): P01–P06 and A01–A02 are implemented in `src/views/public/PublicViews.tsx`; other feature views remain placeholders. `OpportunityDetail` is exported for reuse. `tests/e2e/public-access.spec.ts` covers public/access journeys, private-profile boundaries, bounded return context, recovery, accessibility, and narrow-screen rendering. Directory filtering now includes an exact skill option.
 
 Feature 04 update (2026-10-27): R01/R02 and C01 live in `src/views/intake/IntakeViews.tsx`. `intakeValidationErrors` supplies field keys/messages; `validateIntake` retains the domain result contract. `projectPublicIntake` produces an unpublished preview using the same allow-list boundary and `PublicProfileCard` as P03. UI progress/receipt context is persisted separately from domain draft fields in schema version 3. `tests/e2e/intake.spec.ts` covers intake/status and alternate branches without adding production test backdoors or council-review screens.
 
 Classification revision (2026-10-27): the required domain field extends intake, projection, public-content fingerprint, and directory filtering; specific practice is free text. Persisted shape is now schema version 4, using the existing mismatch/reset notice. Visible location labels use **General location**, retaining internal `area` and fictional values.
+
+Features 05–07 update (2026-10-27): F01/F02 in `src/views/coordinator/CoordinatorViews.tsx`; M01/M02/C02 in `src/views/council/CouncilViews.tsx`; M03–M05 in `src/views/council/OpportunityViews.tsx`; C03 in `src/views/intake/CreativeReferralViews.tsx`. Browser coverage: `coordinator.spec.ts`, `council-profile.spec.ts`, `opportunities.spec.ts`.
+
+Feature 08 update (2026-10-28): `CouncilOverviewPanel.tsx` renders `councilOverview`; `overviewText.ts` formats "x of y (window)" and renders empty bases as "—" with "no records yet" (never NaN/Infinity/0%). Known exception to "labels only in `labels.ts`": in-app notice sentences remain in `NOTICE_TEXT` in `domain/selectors.ts`, written in a neutral voice so every role's list reads correctly.
+
+Feature 09 update (2026-10-28): no production changes. `journeys.spec.ts` and `a11y-responsive.spec.ts` share helpers in `tests/e2e/support.ts`. Two tests seed browser state through the saved `ccz-demo:v1` envelope (`page.evaluate` + reload) where the UI cannot reach the state directly; no production test hook exists.
 
 ## Naming
 
@@ -113,7 +126,7 @@ No telemetry or remote logging. `console` output is limited to development warni
 
 ## Performance
 
-- Keep the production bundle small (target under 200 KB gzipped JS, PROPOSED). Current: about 104.3 KB. No images or fonts beyond inline SVG icons.
+- Keep the production bundle small (target under 200 KB gzipped JS, PROPOSED). Current: about 134.0 KB (Features 01–09). No images or fonts beyond inline SVG icons.
 - Code-split by role area only if the bundle target is exceeded.
 
 ## Accessibility
@@ -122,18 +135,19 @@ Follow `ui-context.md` → Accessibility. Every new view must pass the axe scan 
 
 ## Verification Commands
 
-Current revision verified on 2026-10-27 (Windows). Re-run before citing these results for later code changes. Sol Senior reviewed the source; a Luna worker implemented the creative-domain revision after Feature 04. The requested model name “6.1 Luna” was unavailable, so the exposed `gpt-6-luna` worker role was used and disclosed.
+Features 01–09 verified on 2026-10-28 (Windows development workstation) on branch `feature/mvp-completion`. Re-run before citing these results for later code changes. Features 08–09 were implemented by a Claude Haiku 5.5 worker and independently verified by a Claude Sonnet 5.5 reviewer (both reran every command); the orchestrator reran the full set afterwards.
 
 | Command | What it checks | Last result |
 |---|---|---|
-| `npm ci --no-audit --no-fund` | Clean install from the lockfile | exit 0; 237 packages |
+| `npm ci` | Clean install from the lockfile | exit 0; 237 packages |
 | `npm run typecheck` | `tsc --noEmit`, strict | exit 0 |
 | `npm run lint` | ESLint with typescript-eslint and react-hooks rules | exit 0 |
-| `npm test` | Vitest unit tests, single run | 129 passed (14 files) |
-| `npm run build` | Typecheck, then static build to `dist/` | exit 0, including browser-suite rebuild; 104.30 KB gzipped JS |
-| `npm run preview` | Serves `dist/` locally (demo fallback) | used by the e2e run |
-| `npm run test:e2e` | Playwright (Chromium), which builds and serves `dist/` | 28 passed with `PLAYWRIGHT_PORT=4188`; includes domain/filter/error-focus, intake keyboard completion, and axe/320/360 px checks |
+| `npm test` | Vitest unit tests, single run | 180 passed (16 files) |
+| `npm run build` | Typecheck, then static build to `dist/` | exit 0; 134.02 KB gzipped JS, 3.05 KB gzipped CSS |
+| `npm run preview` | Serves `dist/` locally (demo fallback) | used by the e2e run; separately served on port 4195 with local relative assets only (development workstation, not the presenter laptop) |
+| `npm run test:e2e` | Playwright (Chromium), which builds and serves `dist/` | 81 passed (9 files) with `PLAYWRIGHT_PORT`; two consecutive verifier runs also 81/81, no flakes. Includes main/alternate journeys, exception paths, axe on every route, overflow at 320/360/768/1280 px, keyboard-only runs, CSS-zoom 200% approximation, and an external-request guard |
+| `git diff --check` | Whitespace errors | exit 0 |
 
-Chromium needs a one-time install: `npx playwright install chromium` (already installed on the presenting machine). This revision used Vite on port 4190 for desktop/mobile intake step 2, review, and directory screenshots and browser-exception checks at 1280/320/360px. The prior public/access/status checks remain in the browser suite. Manual screen-reader testing and full 200% zoom coverage remain unverified.
+Chromium needs a one-time install: `npx playwright install chromium` on each machine that runs the browser suite. Manual screen-reader testing, real browser 200% zoom, non-Chromium browsers, and the presenter-laptop run remain unverified.
 
 Do not cite a command as passing unless its result is recorded here from a run in the current session.

@@ -13,6 +13,30 @@ A single static, client-only single-page application. All "system" behavior — 
 - The UI calls the existing `area` field **General location** and explains the intended geographic scope. Fictional location values and privacy boundaries remain intact.
 - Persisted shape uses schema version 4. Under the existing prototype compatibility policy, older saved demo envelopes restore baseline fixtures with a notice; no production-data migration is implied.
 
+### Remaining MVP decisions — 2026-10-27
+
+Features 05–09 are implemented and verified on branch `feature/mvp-completion` (2026-10-28). These decisions resolve differences between the feature text and existing rules without introducing a backend:
+
+- Coordinator follow-up notes use reason-required record audit events with the coordinator as actor/relay. They never enter the public projection or the council-only internal-notes field.
+- Optional assisted accounts also apply to ongoing maintenance. A narrow, online-only assigned-coordinator profile update validates the person's explicit agreement and reuses the same intake validation, public-content fingerprint, and pending-review rules as an own-profile edit. It preserves identity, account, source, reference, referrals, and verification; it cannot opt into listing or approve content. Coordinator-mediated follow-up is normalized to the acting staff member. Assigned, consented correction/withdrawal case requests use coordinator audit attribution; ordinary offline intake corrections retain the existing queue.
+- A withdrawal request turns listing off immediately when the case opens. Council resolution records disposition; it is not the first privacy-removal step.
+- Duplicate links preserve both records, account ownership, referrals, and audit histories. Council staff may inspect related histories from the kept-record detail, clearly labeled as separately stored. There is no identity merge or referral reassignment; linked aliases are excluded from aggregate record counts and new invitations.
+- Membership verification can be separate from approval of public content. An optional reason-bearing public-changes decision uses existing `updatePending`/`updateReason` and clears the approved public fingerprint. It preserves verified membership and requires explicit council approval of the corrected content. Private/not-yet-reviewed approval without a changes reason retains existing behavior.
+- Contact-only, interest, legal-name, and no-op edits preserve a pending public-content changes reason. Substantive edits can answer the reason but leave the pending-review flag until council approval; reverting content does not silently decide the review.
+- Council reporting is received-only. Device-only starts/submissions and private queue payloads remain coordinator-side. Reporting distinguishes current-state totals from cumulative referral stages evidenced by fixtures and audit history, with explicit bases and a synthetic-data window.
+- The local MVP fallback remains the static build served by `npm run preview`; no single-file distribution, hosting resource, or deployment is required for this scope.
+- The user confirmed that the ideathon will use another laptop/peer's computer. Development-workstation fallback evidence must be labeled as such; the presenter-laptop install/build/preview and non-builder rehearsal are an explicit handoff, not an inferred pass.
+
+### Feature 08–09 implementation notes — 2026-10-28
+
+- `councilOverview(data, at)` in `selectors.ts` is the single source for M01 figures. Record figures exclude duplicate-linked aliases; referral figures count every referral (alias referrals still hold capacity), and the referral funnel base is referrals started.
+- Cumulative referral stages mean "reached at any point in recorded history", so confirmation is retained after completion. Exception: the attended/completed stage walks history in order and drops a completion later reversed by an `outcome_corrected` event; a later re-completion counts again.
+- Overdue (PROPOSED demo assumption): a record still `received` or `under_review` five or more demo days after its latest receipt or resubmission (`latestReceiptAt`). Pending profile updates are not aged. The queue marker, queue age, and overview share `isOverdue`.
+- M01 recent activity is the council's `noticesFor` list (last 10). Queue and draft events never reach any council or coordinator notice; duplicate events stay council-only.
+- Recorded existing behavior, pending team confirmation: `inviteCreative`/`offerReferral` refuse a new invitation or offer once confirmed places are full (`full`). Referrals already offered or accepted remain and cannot be confirmed until a place frees. This is stricter than, but consistent with, "offers never reserve a place".
+- No CSV export was built (spec 08 marks it optional); no export control appears.
+- Feature 09 changed no production code. Verification is the Playwright suite (`journeys.spec.ts`, `a11y-responsive.spec.ts`) plus documented manual handoffs.
+
 ### Feature 04 implementation notes — 2026-10-27
 
 - `src/views/intake/IntakeViews.tsx` implements the shared R01/R02 intake and C01 creative status views. Coordinator capture uses the same form with actor-derived, read-only source attribution. Later coordinator/council/profile/referral workspaces remain placeholders.

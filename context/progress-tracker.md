@@ -1,14 +1,14 @@
 # Progress Tracker
 
-Last updated: 2026-10-27.
+Last updated: 2026-10-28.
 
 ## Current Phase
 
-Feature 04 and the approved creative-domain/location revision are implemented, independently reviewed, and verified. Features 01–04 are complete at their scoped boundaries; the full MVP is not complete.
+The MVP (Features 01–09) is implemented and verified on branch `feature/mvp-completion` (worktree `E:/side-work/hermosa-mvp-completion`). It is **not yet integrated into `main` or pushed**; integration waits for the user's explicit go-ahead. Remaining items are human handoffs (presenter laptop, non-builder rehearsal, manual screen reader, real 200% zoom) and team decisions, not unbuilt features.
 
 ## Current Goal
 
-Next implementation scope is Feature 05: coordinator workspace and offline queue simulation. The classification revision does not implement Feature 05.
+Integrate `feature/mvp-completion` into `main` (fast-forward) and push when authorized, then complete the presenter-laptop handoff in `DEMO.md`. Features 08–09 used a Claude Haiku 5.5 worker with independent Claude Sonnet 5.5 verification, as the user requested on 2026-10-28; Features 05–07 used the earlier GPT-6 Luna / GPT-6.1 Sol routing. Root (orchestrator) owns scope, integration, documentation, and final verification.
 
 ## Milestones
 
@@ -19,13 +19,54 @@ Next implementation scope is Feature 05: coordinator workspace and offline queue
 | 02 | Domain state, permissions, fixtures | DONE, accepted gaps below | Existing commit 1dc8db3; later regression checks extend it. |
 | 03 | Public discovery, guidance, simulated access | DONE at Feature 03 scope | Code commit e860df9; P01–P06/A01–A02. Feature 04 completes the post-intake opportunity return. |
 | 04 | Shared intake, privacy, application status | DONE at Feature 04 scope | Code bc30efe plus classification revision 45f9439; R01/R02/C01, assisted capture, corrections and human-review requests. |
-| 05 | Coordinator workspace/offline simulation | NEXT | Queue domain rules and assisted capture exist; workspace/sync screens do not. |
-| 06 | Council review/corrections/profile maintenance | NOT STARTED | Creative correction entry exists; council review and C02 remain unbuilt. |
-| 07 | Opportunities/referrals/outcomes | NOT STARTED | P05 expresses interest; full role workflows remain unbuilt. |
-| 08 | Council overview/reporting/notifications | NOT STARTED | Selectors and creative example notices exist; council screens unbuilt. |
-| 09 | Full-journey verification/demo packaging | NOT STARTED | README present; complete demo stories depend on 05–08. |
+| 05 | Coordinator workspace/offline simulation | DONE (branch) | Code 8295749; GPT-6.1 Sol approved; covered by full-journey suite. |
+| 06 | Council review/corrections/profile maintenance | DONE (branch) | Code f79dda4; covered by full-journey suite. |
+| 07 | Opportunities/referrals/outcomes | DONE (branch) | Code d7773b2; covered by full-journey suite. |
+| 08 | Council overview/reporting/notifications | DONE (branch) | Code 352c9d3; Sonnet 5.5 approved after one repair batch. |
+| 09 | Full-journey verification/demo packaging | DONE (branch), human handoffs open | Tests/README/DEMO.md in the Feature 09 commit; no production changes. Presenter-laptop and non-builder rehearsal pending. |
 
 Dependency order: 01 -> 02 -> {03, 04, 07} -> {05, 06} -> 08 -> 09.
+
+## Feature 08 — 2026-10-28
+
+Code commit `352c9d3f68641ed4db9a03693569317f84a55a1c`.
+
+- M01 overview panel (`CouncilOverviewPanel.tsx`) above the review queue, from `councilOverview`: pending reviews (new/resubmitted/under review/profile updates/open cases/overdue), records by status, listed vs private verified, opportunities, current referrals, cumulative referral funnel, exceptions, site and source coverage. Every figure states its base and window; empty bases render "—" with "no records yet". Synthetic-data label and device-exclusion note shown. No export control.
+- One `NotificationList` ("In-app example — no SMS or email is sent") on C01, C03, F01, M01, from role-scoped `noticesFor` with links each role can open. F01 shows "N items on devices, not received".
+- Verifier repairs: attended stage drops completions reversed by outcome correction; cross-view e2e agreement (M01/M05/C03/M02); canonical status labels with three documented council variants; meaningful queue/draft guard tests; linked-duplicate note on the records tab; overdue from latest receipt; notice sentences for public-content changes, decline upheld, review reopened; unused `councilFunnel` removed. Root also aligned queue age with latest receipt.
+- Decisions recorded in `architecture-context.md` (Feature 08–09 notes) and `ui-context.md` (council aggregate variants).
+
+## Feature 09 — 2026-10-28
+
+- `tests/e2e/journeys.spec.ts` (8): Mika main story from Reset (offline queue, failed send, retry → exactly one record, changes requested, coordinator correction with same reference, verify, claim, invitation, coordinator-relayed acceptance, confirm with instructions, attended; Mika never in directory; agreement across C01/C03/F02/M02/M05/M01 and M01 deltas); Jun alternate story (sign-up from opportunity, verify, list, guest finds with no private data, unlist); decline + human review; duplicate resolution; conflict discard; capacity full; direct-URL denial (guest, Site B); reload mid-decision and Reset-to-baseline.
+- `tests/e2e/a11y-responsive.spec.ts` (11): axe (no serious/critical) and no overflow at 320/360/768/1280 px on every route in `routes.ts`; keyboard-only council error focus, coordinator sync/retry with `aria-live` announcement, and referral response (intake keyboard run is in `intake.spec.ts`); CSS-zoom 200% approximation; simulation notices on access, queue, notifications, reporting.
+- Pre-existing tests cover cancellation cascade, withdrawal, outcome correction, conflict resubmit, and the external-request guard; the coverage map is in `DEMO.md`.
+- Copy review: forbidden terms (paid, income, hired, certified, guaranteed, official, endorsed, salary, wage, job, employ) appear only as negative disclaimers; only `.invalid` email addresses; names labelled "(demo)"/"(fictional)". Collision with real people's names was not checked.
+- README rewritten (what it is/is not, prerequisites, verified commands, Reset, personas, limitations). `DEMO.md` is the single demo script, corrected to match the real UI; its handoff table is intentionally empty.
+- Sonnet 5.5 approved with no blocking issues; root applied its minors (directory anchor assertion, final C01 check, timing qualifier).
+
+## Final verification — 2026-10-28 (development workstation)
+
+Production source identical to `352c9d3`; the Feature 09 commit adds tests and documentation only.
+
+| Check | Result |
+|---|---|
+| `npm ci` | PASS; 237 packages (worker) |
+| Typecheck / lint | PASS (worker, verifier, root) |
+| `npm test` | PASS; 180 tests in 16 files (worker, verifier, root) |
+| `npm run build` | PASS; 134.02 KB gzipped JS, 3.05 KB gzipped CSS |
+| `npm run test:e2e` | PASS; 81 tests in 9 files (root run on port 4193; verifier ran twice, no flakes) |
+| `git diff --check` | PASS |
+| Local fallback | `npm run preview` on port 4195 served local relative assets only — development workstation evidence, NOT the presenter laptop |
+
+Not verified: manual screen-reader pass, real browser 200% zoom, non-Chromium browsers, presenter-laptop install/build/preview, non-builder teammate rehearsal, narration timing.
+
+## MVP completion checkpoints (Features 05–07)
+
+- Feature 05 code: `8295749e45868733e4fc994de05933e6ef1303da`. F01/F02, assigned-site search/follow-ups, audited notes/relay, invitation claim identity choice, serial simulated send/failure/retry/conflict, coalesced corrections, current R02 transfer/receipt status. GPT-6.1 Sol source review approved after eight repairs; root independently reran coordinator Playwright: 10/10, with a fresh production build. Worker also reported 54 focused domain tests, typecheck/lint/diff checks green. Full integrated counts and complete stories are not yet verified.
+- Feature 06 code: `f79dda4cecd7c04dd8e4768f2713cba297a9a259`. M01/M02/C02, separate membership/public-content decisions, immediate withdrawal and relist guard, linked history without ownership transfers, profile editing/validation, per-case resolution, and online consented F02 maintenance for accountless creatives. GPT-6.1 Sol approved after the consolidated repair batch and a final shared focus-target repair. Root reran coordinator+council/profile browser tests: 21/21. Worker ran the added missing-name/display/evidence focus regression: 1/1; type/lint/diff checks green. Manual screen-reader and full integrated verification remain outstanding.
+- Feature 07 code: `d7773b2c949089ca467d967663f7911afca2b506`. M03/M04/M05/C03, manual private/nonalias verified candidates, opportunity lifecycle, material-change reconfirmation, allocation/cancellation rules, response/outcome/correction flows, and consented F02 outcome requests. GPT-6.1 Sol approved after eight source repairs, including action/case form isolation and runtime outcome validation. Root independently reran the opportunity browser suite: 7/7 with production rebuild. Worker reported 63 focused domain tests and type/lint/diff checks green. Complete from-Reset stories, aggregate reporting, and all-view checks remain Feature 09 gates.
+- Root is maintaining `DEMO.md` as the role journey matrix and eventual exact-click demonstration script. Do not claim a human teammate rehearsal or manual screen-reader check has happened.
 
 ## Creative Classification Revision — 2026-10-27
 
@@ -104,14 +145,14 @@ The first full browser run passed 24/25: the old Feature 03 return-context test 
 
 ## Remaining Boundaries and Accepted Gaps
 
-- Features 05–08 workspaces and full main/alternate demo stories remain unfinished. F05 sync management, council M02 review, C02 maintenance, and C03 referral workflows are later scopes.
 - No production backend/auth, real credentials/messages, official endorsement, live integrations, or personal-data collection.
 - No site deployment/hosting resource; GitHub is source hosting only.
 - Mobile navigation wraps rather than using a menu button, as previously accepted.
-- Coordinator Follow-ups and council Creative records navigation arrive later.
 - Store run has browser coverage rather than a dedicated unit suite.
-- Previously accepted domain minors remain: creative edits can clear updateReason; reverting pending content can leave updatePending; explicit tests for non-confirmed recordInstructions refusal and updateReason clearing on approval remain absent. Not broadened into this iteration.
-- Manual screen-reader testing, complete 200% zoom coverage, every future role view's keyboard audit, and full no-network main-story testing remain for Feature 09.
+- Previously accepted domain minors (creative edits clearing updateReason; reverting pending content leaving updatePending; missing explicit tests for non-confirmed recordInstructions refusal and updateReason clearing on approval) were partly addressed by Feature 06's pending-review rules but were not re-audited.
+- Human handoffs still open: manual screen-reader spot check, real browser 200% zoom (only a CSS-zoom approximation is automated), non-Chromium browsers, presenter-laptop install/build/preview, and a non-builder teammate rehearsal recorded in the `DEMO.md` handoff table.
+- Team decision pending: invitations/offers are refused once confirmed places are full (recorded in `architecture-context.md`). The claim form pre-fills a fictional `INV-DEMO-DANI` code that presenters replace, as `DEMO.md` explains.
+- Minor verifier notes not acted on: two notices for one outcome correction (case resolved + outcome corrected); notice links use full sentences, some identical; overview tables stay two-column below 640 px (no overflow).
 - Detailed sub-sector taxonomy, eligibility evidence, information-use wording, guidance sources, and real contact routes require council confirmation; the nine statutory domain names are established, and demo examples remain labeled.
 
 ## Repository / Integration
@@ -122,6 +163,8 @@ Existing history is preserved. Integration targets main in E:/dev-work/hermosa. 
 
 ## Next Recommended Action
 
-Implement context/feature-specs/05-coordinator-workspace-and-offline-queue.md, reusing assisted drafts, device receipts, actor-scoped intake progress, and existing queue transitions. Do not describe the current application as a finished MVP.
+1. With the user's explicit go-ahead: fast-forward `main` in E:/dev-work/hermosa to `feature/mvp-completion`, rerun the verification commands on `main`, push `origin/main`, and compare local/remote hashes.
+2. On the presenter laptop: follow the `DEMO.md` presenter checklist (`npm ci`, `npm run build`, `npm run preview`), then have a teammate who did not build the app run both stories and fill in the handoff table.
+3. Do a manual screen-reader spot check and a real 200% zoom check, and record the results here.
 
-Open questions: exact event date/demo duration, team ownership, judge hosting/access, approved guidance/contact routes, and whether a deck/video is required. These do not block the fictional prototype.
+Open questions: exact event date/demo duration, team ownership, judge hosting/access, approved guidance/contact routes, whether a deck/video is required, and the full-capacity invitation rule. These do not block the fictional prototype.

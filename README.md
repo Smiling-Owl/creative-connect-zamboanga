@@ -1,44 +1,47 @@
 # Creative Connect Zamboanga
 
-A browser-only clickable prototype for a proposed community-assisted creative onboarding, directory, and opportunity-referral service. This is **not an official council website**. All people, sites, providers, contact routes, opportunities, and outcomes in the demo are fictional.
+A browser-only clickable prototype for a proposed community-assisted creative onboarding, directory, and opportunity-referral service.
 
-## Current iteration
+**This is not an official council website.** It is a proposed service concept for demonstration. All people, sites, providers, contact routes, opportunities, and outcomes in the demo are fictional. The council has not approved the service, its wording, or any contact route.
 
-The foundation and domain layer are present. Feature 03 provides public discovery, guidance, and simulated access:
+## What it is
 
-- Program introduction and registration-assistance information.
-- Searchable public directory and privacy-filtered creative profiles.
-- Opportunity browsing, availability, details, and expressions of interest.
-- Example guidance with neutral source labels.
-- Simulated sign-in, sign-up/verification, invitation claiming, staff access, and recovery.
+- A single static web application (React, TypeScript, Vite) that runs entirely in the browser.
+- A simulated service across four roles: guest, creative, community coordinator, and council administrator.
+- A walk-through of the MVP journeys: public discovery, self-service and assisted registration, an offline device queue with simulated sending, council review and corrections, verified membership, opportunity referrals, and outcomes.
+- Demo controls for choosing a persona, simulating connection and a failed send, and resetting the data. They sit outside the product and are labeled as such.
 
-Feature 04 adds the shared creative/coordinator intake, draft progress, private/public choices, submission receipts, and the creative home/application status view. It includes the creative-side correction and human-review request paths. Registration started from an opportunity retains its context through submission and provides a return link.
+## What it is not
 
-Coordinator queue management, council review screens, profile maintenance, and the full referral-to-outcome screens are subsequent iterations. Their routes remain clearly labeled placeholders. Council decisions for the current correction/status demonstrations can be arranged by the existing fictional domain fixtures and tests; a council review interface is not yet implemented.
+- Not a real service, a business permit, a certification, or an official council channel. Verification means council membership checks passed; it is not a rating of work.
+- Not a source of work, income, paid placements, or guaranteed places. Opportunities and referrals record support received.
+- Not secure. Personas are a demo session, not sign-in. No password, code, or account is checked or sent. Permission rules run in the browser and are not security.
+- Not connected to a server, database, messaging service, analytics, or any external API. After the page loads, it makes no network requests.
+- Not for real personal data. Do not enter real names, contacts, or evidence.
 
-The form accepts text descriptions of work; no uploads, polished portfolio, business permit, or government ID are required. Public listing is a separate choice, initially off for a new application, and refusing it does not block support. A draft profile preview is not a public listing.
+## Prerequisites
 
-Creative classification uses the nine domains in RA 11904 plus a free-text specific practice. The council's detailed sub-sector list is still pending. **General location** means a barangay, district, or general area; Area 1/2/3 are fictional demo locations, not creative categories or street addresses.
+- Node.js **22.12 or later** (`engines` in `package.json`).
+- npm (ships with Node.js).
+- For the browser suite: Chromium, installed for Playwright (see Checks).
 
-The classification revision uses saved-state schema version 4. Older local demo data resets to the starting fictional data with a compatibility notice.
-
-## Run locally
-
-Use Node.js 22.12 or later and npm.
+## Install and run
 
 ```sh
 npm ci
 npm run dev
 ```
 
-For the static production build and local demonstration:
+`npm run dev` starts the Vite development server. Open the local URL it prints.
+
+For the static production build and the local demonstration:
 
 ```sh
 npm run build
 npm run preview
 ```
 
-Open the local URL printed by Vite. Routes use hashes so a static host does not need history fallback configuration. Publishing/hosting is separate from creating this source repository.
+Open the local URL that `npm run preview` prints. The build output in `dist/` uses relative local assets and hash routes, so it does not need a host with special configuration.
 
 ## Checks
 
@@ -47,39 +50,64 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
-npx playwright install chromium
+npx playwright install chromium   # one-time, if Chromium is not already installed for Playwright
 npm run test:e2e
 ```
 
-The browser suite builds and starts its own preview server on port 4173. Keep that port free before running it. It includes journey, privacy, accessibility, and narrow-screen checks; passing those checks is not a claim of complete accessibility certification.
+- `npm test` runs the Vitest domain and unit tests.
+- `npm run test:e2e` builds the app and starts its own preview server on port 4173. Keep that port free, or choose another. In PowerShell:
 
-If the default port is occupied, choose another without stopping an unrelated server. In PowerShell:
+  ```powershell
+  $env:PLAYWRIGHT_PORT = '4187'
+  npm run test:e2e
+  ```
 
-```powershell
-$env:PLAYWRIGHT_PORT = '4187'
-npm run test:e2e
-```
+- The browser suite covers the main and alternate journeys, exception paths, role access, persistence and Reset, a network guard, axe scans, keyboard runs, and 320/360/768/1280 px layout. Passing these checks is not a claim of full accessibility certification.
 
-## Demo behavior and limits
+## Reset
 
-- Open **Demo controls** to select a fictional persona, change simulated connectivity, or reset to baseline fixtures.
-- Fictional demo state stays in this browser using versioned localStorage, with an in-memory fallback if storage is unavailable.
-- There is no production backend, database, authentication, permission enforcement, or messaging service.
-- Simulated access never requires a real password. Do not enter real personal information.
-- A public profile requires council verification, public opt-in, and approved public content. Private and nonexistent profile links have the same public response.
-- A queued intake is not received by the council. A referral response is not a confirmed place; attendance is not paid work.
+Open **Demo controls — not part of the service** (the dashed bar at the top; collapsed by default), choose **Reset demo data**, then confirm **Reset demo data** in the dialog. Reset restores the fictional baseline records, opportunities, audit history, and settings, and clears this browser's saved copy.
+
+Demo data is saved only in this browser (`localStorage`, key `ccz-demo:v1`). If storage is blocked, the prototype runs in memory and progress is lost on reload.
+
+## Personas
+
+Choose a persona in **Demo controls**. Each is fictional.
+
+| Persona | Role in the demo |
+|---|---|
+| Guest visitor | Public visitor: directory, opportunities, guidance. |
+| Mika (fictional illustrator) | No account yet. Her record is being registered by Site A. |
+| Jun (fictional video editor) | Self-service creative with a draft in progress. |
+| Rhea (fictional designer, verified) | Verified and listed. Has an offer and a recorded outcome. |
+| Noel (fictional filmmaker, verified) | Self-service, verified, and listed. Expressed interest in a workshop. |
+| Coordinator — Demo Site A | Assigned to the fictional barangay hall site only. |
+| Coordinator — Demo Site B | Assigned to the fictional school site only. |
+| Council administrator (fictional) | Reviews records, manages opportunities and referrals. |
+
+## Known limitations
+
+- **Simulated security and sign-in.** No real authentication, password handling, or permission enforcement. Role access is a prototype rule only.
+- **Simulated offline and sync.** The coordinator's device queue is a browser simulation. There is no real device storage security, background sync, or retry scheduling; a "next send fails" switch simulates failure.
+- **Simulated messaging.** Codes, invitations, and notifications are on-screen examples. No SMS or email is sent.
+- **Fictional data only.** Adults, sites, providers, opportunities, and outcomes are invented and labeled. Council rules, sub-sector lists, guidance sources, and contact routes are placeholders pending council approval.
+- **English only.** No translation.
+- **No export.** The prototype does not export records, files, or reports, and it accepts no file uploads.
+- **Storage.** Saved demo data is versioned. Older saved data is reset to the starting data with a notice. Blocked storage means in-memory use only.
+- **No deployment.** No hosting, domain, or publication is set up. The local static build (`npm run build` then `npm run preview`) is the only supported way to present it.
+- **Accessibility checks are automated.** Axe, keyboard, and zoom-approximation checks run in the browser suite. A manual screen-reader check and a 200% zoom check on the presenting machine are not recorded here.
+- **Browser coverage.** The browser suite runs on desktop Chromium only.
+
+## Documentation
+
+- `DEMO.md`: the single demonstration script (main and alternate stories, talking points, pre-demo checklist, presenter-laptop checklist, and handoff record).
+- `context/`: the product scope, architecture, UI rules, code standards, feature specifications, and progress tracker. Read `AGENTS.md` before changing the project.
+- Operational requirements for any future hosting, real authentication, consent handling, or data protection are not defined in this prototype. Record them in `context/` before they are built.
 
 ## Project map
 
-- `context/project-overview.md`: product scope, users, and business rules.
-- `context/architecture-context.md`: technical boundaries and state model.
-- `context/ui-context.md`: screen map, vocabulary, and design system.
-- `context/feature-specs/`: implementation acceptance criteria.
-- `context/progress-tracker.md`: current checks, completed work, limitations, and next iteration.
-- `src/domain/`: pure transitions, permissions, public projections, and selectors.
-- `src/fixtures/`: fictional baseline records and personas.
+- `src/domain/`: pure state transitions, permissions, public projections, and selectors.
+- `src/fixtures/`: fictional baseline records, opportunities, and personas.
 - `src/state/`: demo state and local persistence.
-- `src/views/`: implemented role views.
-- `tests/e2e/`: browser tests.
-
-Read `AGENTS.md` and the task-relevant context before changes. Keep the approved client-only architecture and preserve unrelated work. See the progress tracker for the iteration's actual verification results and remaining work.
+- `src/views/`: role views and shared intake.
+- `tests/e2e/`: browser journey, accessibility, and responsive tests.

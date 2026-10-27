@@ -16,6 +16,7 @@ FR 11, 12, 13 in `project-overview.md`; opportunity/referral state machines, cap
 4. **C03 My opportunities and referrals:** list of the creative's referrals with status; selected detail shows the opportunity (P05 component), current status sentence, actions (Accept / Decline an offer; Withdraw after accepting with a reason), confirmation instructions once confirmed, cancellation reason if cancelled, recorded outcome, and "This outcome is wrong — request a correction". Copy never calls attendance paid work or income.
 5. **P05 action:** verified creative "Express interest" creates one referral in `interest`; afterwards the button is replaced by the current status.
 6. In-app notifications (examples) for offer, confirmation, cancellation, outcome recorded.
+7. Assisted creatives do not need a personal account to question an outcome. F02 supports an online, assigned-coordinator relay of an outcome-correction request with the person's explicit agreement, required reason, referral/record ownership checks, and coordinator audit attribution. Council still decides whether to correct or uphold; the coordinator cannot edit outcomes. The assigned coordinator sees the request and resolution.
 
 ## Non-Goals
 
