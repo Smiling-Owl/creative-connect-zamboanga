@@ -1,8 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { closeOpportunity } from './opportunity';
+import { closeOpportunity, validateOpportunity, type OpportunityInput } from './opportunity';
 import { confirmPlace, expressInterest, inviteCreative, offerReferral, recordOutcome, respondToOffer, startReferralReview } from './referral';
 import { ctxFor, fresh } from '../test/helpers';
 import type { DomainData } from './types';
+
+const validOpportunity: OpportunityInput = {
+  title: 'Fictional workshop', type: 'workshop', provider: 'Demo provider (fictional)',
+  description: 'A practical session.', eligibility: 'Verified creatives.', costLabel: 'No fee.', capacity: 3,
+  dateLabel: 'November 2026', deadline: '2026-11-20', locationMode: 'Demo hall (fictional)',
+  ownerId: 'Council team', nextStep: 'Wait for council confirmation.', contactRoute: 'Ask the fictional council team.',
+};
+
+describe('opportunity validation', () => {
+  it.each([
+    ['description', { description: '   ' }],
+    ['cost', { costLabel: '  ' }],
+    ['responsible owner', { ownerId: '' }],
+    ['calendar date', { deadline: '2026-02-31' }],
+  ])('requires a valid %s', (_label, patch) => {
+    expect(validateOpportunity({ ...validOpportunity, ...patch })).not.toBeNull();
+  });
+});
 
 function step<T extends { ok: boolean }>(result: T): T & { ok: true } {
   if (!result.ok) throw new Error(JSON.stringify(result));

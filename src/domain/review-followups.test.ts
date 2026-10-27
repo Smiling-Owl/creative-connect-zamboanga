@@ -87,6 +87,26 @@ describe('withdrawal requests', () => {
     if (result.ok) expect(result.data.cases.find((item) => item.id === result.id)).toMatchObject({ kind: 'profile_correction', openedBy: 'coord-a', state: 'open' });
     expect(JSON.stringify(data)).toBe(snapshot);
   });
+
+  it('lets an assigned coordinator relay an outcome-correction request only online with explicit agreement and the owned referral', () => {
+    const data = fresh();
+    const input = { kind: 'outcome_correction' as const, recordId: 'rec-rhea', referralId: 'ref-0007', reason: 'The person says the attendance outcome is incorrect.', personAgreed: true };
+    expect(openCase(data, ctxFor('coord-a'), { ...input, personAgreed: false })).toMatchObject({ ok: false, code: 'consent_required' });
+    expect(openCase(data, ctxFor('coord-a', { online: false }), input)).toMatchObject({ ok: false, code: 'offline' });
+    expect(openCase(data, ctxFor('coord-b'), input)).toMatchObject({ ok: false, code: 'forbidden' });
+    expect(openCase(data, ctxFor('coord-a'), { ...input, recordId: 'rec-joel' })).toMatchObject({ ok: false, code: 'not_found' });
+    const opened = step(openCase(data, ctxFor('coord-a'), input));
+    expect(opened.data.cases.find((item) => item.id === opened.id)).toMatchObject({ kind: 'outcome_correction', recordId: 'rec-rhea', referralId: 'ref-0007', openedBy: 'coord-a', state: 'open' });
+    expect(opened.data.audit.at(-1)).toMatchObject({ actor: { role: 'coordinator', id: 'coord-a' }, via: 'coord-a' });
+  });
+
+  it('does not resolve an outcome-correction case with an invalid outcome value', () => {
+    const opened = step(openCase(fresh(), ctxFor('rhea'), { kind: 'outcome_correction', recordId: 'rec-rhea', referralId: 'ref-0007', reason: 'Please check the recorded outcome.' }));
+    const before = JSON.stringify(opened.data);
+    const invalid = resolveCase(opened.data, ctxFor('council'), { caseId: opened.id!, resolution: 'Checked the fictional register.', newOutcome: 'keep' as never });
+    expect(invalid).toMatchObject({ ok: false, code: 'invalid_outcome' });
+    expect(JSON.stringify(opened.data)).toBe(before);
+  });
 });
 
 describe('follow-up arrangements', () => {

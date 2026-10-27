@@ -71,6 +71,27 @@ export function opportunityCapacity(data: DomainData, opportunityId: string): Ca
   return { used, capacity: opportunity.capacity, remaining: Math.max(opportunity.capacity - used, 0) };
 }
 
+/** Verified, non-alias records for manual referral review. Private records are intentionally included. */
+export function verifiedReferralCandidates(data: DomainData, opportunityId: string) {
+  return data.records
+    .filter((record) => record.application.state === 'verified' && record.application.duplicate?.status !== 'linked')
+    .map((record) => ({
+      record,
+      referral: data.referrals.find((item) => item.recordId === record.id && item.opportunityId === opportunityId) ?? null,
+    }))
+    .sort((a, b) => a.record.intake.displayName.localeCompare(b.record.intake.displayName));
+}
+
+export function opportunityReferralRoster(data: DomainData, opportunityId: string): Record<ReferralState, Referral[]> {
+  const referrals = data.referrals.filter((item) => item.opportunityId === opportunityId);
+  return Object.fromEntries(REFERRAL_STATES.map((state) => [state, referrals.filter((item) => item.state === state)])) as Record<ReferralState, Referral[]>;
+}
+
+export function opportunityReferralCounts(data: DomainData, opportunityId: string): Record<ReferralState, number> {
+  const roster = opportunityReferralRoster(data, opportunityId);
+  return Object.fromEntries(REFERRAL_STATES.map((state) => [state, roster[state].length])) as Record<ReferralState, number>;
+}
+
 /** What a coordinator sees: assigned site records, their own drafts, and their own device queue. */
 export function coordinatorWorkspace(data: DomainData, actor: Actor) {
   return {
@@ -187,6 +208,9 @@ const NOTICE_TEXT: Record<string, (reference: string, detail: string | null) => 
   account_claimed: () => 'Your account is linked to your existing record.',
   offer_awaiting_response: () => 'A place offer is waiting for a response.',
   offer_response_relayed: () => 'A response to a place offer was recorded with coordinator assistance.',
+  outcome_corrected: (_ref, detail) => `The council corrected the recorded support outcome: ${detail ?? 'see your referral details'}.`,
+  outcome_upheld: () => 'The council reviewed your outcome request and kept the recorded outcome. See the council note.',
+  instructions_recorded: () => 'The council added practical instructions for your confirmed place.',
 };
 
 /**
@@ -221,14 +245,19 @@ export function noticesFor(data: DomainData, actor: Actor, limit = 10): InAppNot
     .map((event) => {
       const record = data.records.find((r) => r.id === event.entityId);
       const reference = record?.application.reference ?? '';
-      const referral = data.referrals.find((item) => item.id === event.entityId);
       const describe = NOTICE_TEXT[event.action];
-      const referralNotice = event.action === 'state_changed' && actor.role === 'coordinator'
-        ? referral?.state === 'offered'
-          ? 'A place offer is waiting for a response.'
-          : referral?.state === 'confirmed'
-            ? 'The council confirmed a place for this referral.'
-            : null
+      const referralNotice = event.action === 'state_changed' && event.entityType === 'referral'
+        ? event.to === 'offered'
+          ? 'The council offered you a place. Review the details and respond.'
+          : event.to === 'confirmed'
+            ? 'The council confirmed your place. Check the practical instructions.'
+            : event.to === 'completed'
+              ? 'The council recorded attendance or completion for your support referral.'
+              : event.to === 'did_not_attend'
+                ? 'The council recorded that you did not attend. Contact the council if you need to follow up.'
+                : event.to === 'awaiting_follow_up'
+                  ? 'The council recorded that follow-up is still needed.'
+                  : null
         : null;
       const text = referralNotice ?? describe?.(reference, event.reason) ?? 'A referral you are assigned to was updated.';
       return { id: event.id, at: event.at, text };

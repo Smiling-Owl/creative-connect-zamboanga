@@ -16,7 +16,7 @@ export function openCase(
   const record = findRecord(data, input.recordId);
   if (!record) return fail('not_found', 'That record could not be found.');
 
-  if (ctx.actor.role === 'coordinator' && (input.kind === 'profile_correction' || input.kind === 'withdrawal')) {
+  if (ctx.actor.role === 'coordinator' && (input.kind === 'profile_correction' || input.kind === 'withdrawal' || input.kind === 'outcome_correction')) {
     if (!ctx.settings.online) return fail('offline', 'This request needs a connection. It has not been sent to the council.');
     if (input.personAgreed !== true) return fail('consent_required', 'Confirm that the person agreed to send this request.');
     if (!can(ctx.actor, 'request_case', { siteId: record.siteId })) return fail('forbidden', 'Only the coordinator for this record’s site can send this request.');
@@ -89,6 +89,17 @@ export function resolveCase(
   if (!resolution) return reasonMissing('resolve this case');
   const existing = data.cases.find((c) => c.id === input.caseId);
   if (!existing || existing.state !== 'open') return fail('not_open', 'That case is not open.');
+  if (existing.kind === 'outcome_correction') {
+    if (input.newOutcome !== undefined && !OUTCOME_STATES.includes(input.newOutcome)) {
+      return fail('invalid_outcome', 'Choose a listed support outcome or keep the current outcome.');
+    }
+    const referral = existing.referralId ? findReferral(data, existing.referralId) : null;
+    if (!referral || referral.recordId !== existing.recordId || !OUTCOME_STATES.includes(referral.state as OutcomeState)) {
+      return fail('no_outcome', 'This outcome can no longer be changed because no recorded outcome is available.');
+    }
+  } else if (input.newOutcome !== undefined) {
+    return fail('invalid_case_action', 'An outcome change can only resolve an outcome-correction request.');
+  }
 
   const next = cloneData(data);
   const target = next.cases.find((c) => c.id === input.caseId)!;

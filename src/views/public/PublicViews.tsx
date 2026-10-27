@@ -118,12 +118,15 @@ export function OpportunityDetail({
   opportunity,
   remaining,
   at,
+  draftPreview = false,
 }: {
   opportunity: ReturnType<typeof useDemo>['state']['data']['opportunities'][number];
   remaining: number;
   at: string;
+  draftPreview?: boolean;
 }) {
-  return <><p>{opportunity.description}</p><dl className="detail-list"><dt>Provider</dt><dd>{opportunity.provider}</dd><dt>Who can take part</dt><dd>{opportunity.eligibility}</dd><dt>Cost</dt><dd>{opportunity.costLabel}</dd><dt>Availability</dt><dd>{opportunityAvailability(opportunity, remaining, at)}</dd><dt>Date</dt><dd>{opportunity.dateLabel}</dd><dt>Deadline</dt><dd>{opportunity.deadline}</dd><dt>Location or format</dt><dd>{opportunity.locationMode}</dd><dt>Next step</dt><dd>{opportunity.nextStep}</dd></dl></>;
+  const availability = draftPreview ? 'Not yet published' : opportunityAvailability(opportunity, remaining, at);
+  return <><p>{opportunity.description}</p><dl className="detail-list"><dt>Provider</dt><dd>{opportunity.provider}</dd><dt>Who can take part</dt><dd>{opportunity.eligibility}</dd><dt>Cost</dt><dd>{opportunity.costLabel}</dd><dt>Capacity</dt><dd>{opportunity.capacity} total · {Math.max(remaining, 0)} remaining</dd><dt>Availability</dt><dd>{availability}</dd><dt>Date</dt><dd>{opportunity.dateLabel}</dd><dt>Deadline</dt><dd>{opportunity.deadline}</dd><dt>Location or format</dt><dd>{opportunity.locationMode}</dd><dt>Next step</dt><dd>{opportunity.nextStep}</dd><dt>Council contact route</dt><dd>{opportunity.contactRoute}</dd>{opportunity.state === 'cancelled' && opportunity.cancelReason ? <><dt>Cancellation reason</dt><dd>{opportunity.cancelReason}</dd></> : null}</dl></>;
 }
 
 function OpportunityPage() {

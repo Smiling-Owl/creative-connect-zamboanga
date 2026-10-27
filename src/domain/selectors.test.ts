@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { councilCounts, councilFunnel, councilQueue, creativeNextAction, creativeView, noticesFor, opportunityCapacity } from './selectors';
+import { councilCounts, councilFunnel, councilQueue, creativeNextAction, creativeView, noticesFor, opportunityCapacity, opportunityReferralCounts, opportunityReferralRoster, verifiedReferralCandidates } from './selectors';
 import { searchDirectory } from './publicProfile';
 import { ctxFor, fresh } from '../test/helpers';
 import type { Actor } from './types';
@@ -39,6 +39,27 @@ describe('council funnel', () => {
     const emptied = { ...data, records: [], referrals: [] };
     const stages = councilFunnel(emptied);
     expect(stages.every((s) => s.count === 0 && s.base === 0)).toBe(true);
+  });
+});
+
+describe('opportunity referral workspace selectors', () => {
+  it('includes private verified records, excludes linked aliases, and sorts candidates alphabetically', () => {
+    const data = fresh();
+    const aliased = { ...data, records: data.records.map((record) => record.id === 'rec-joel-2'
+      ? { ...record, application: { ...record.application, duplicate: { candidateRecordId: 'rec-joel', status: 'linked' as const, reason: 'Same fictional person.' } } }
+      : record) };
+    const candidates = verifiedReferralCandidates(aliased, 'opp-clinic');
+    expect(candidates.some((item) => item.record.id === 'rec-joel')).toBe(true);
+    expect(candidates.some((item) => item.record.id === 'rec-joel-2')).toBe(false);
+    expect(candidates.map((item) => item.record.intake.displayName)).toEqual([...candidates.map((item) => item.record.intake.displayName)].sort((a, b) => a.localeCompare(b)));
+  });
+
+  it('groups roster rows and counts all retained referral entities', () => {
+    const data = fresh();
+    const roster = opportunityReferralRoster(data, 'opp-film');
+    const counts = opportunityReferralCounts(data, 'opp-film');
+    expect(roster.offered.map((item) => item.id)).toContain('ref-0004');
+    expect(counts.offered).toBe(roster.offered.length);
   });
 });
 
@@ -105,7 +126,7 @@ describe('in-app notices are scoped to the persona', () => {
   it('a coordinator sees an offer notice only for a referral assigned to their site', () => {
     const data = fresh();
     const event = { id: 'evt-offer', at: '2026-10-26T09:00:00.000Z', actor: { role: 'council' as const, id: 'council-1' }, via: null, entityType: 'referral' as const, entityId: 'ref-0004', action: 'state_changed', from: 'under_review', to: 'offered', reason: null };
-    expect(noticesFor({ ...data, audit: [event] }, ctxFor('coord-a').actor)[0]?.text).toBe('A place offer is waiting for a response.');
+    expect(noticesFor({ ...data, audit: [event] }, ctxFor('coord-a').actor)[0]?.text).toBe('The council offered you a place. Review the details and respond.');
     expect(noticesFor({ ...data, audit: [event] }, ctxFor('coord-b').actor)).toEqual([]);
   });
 });

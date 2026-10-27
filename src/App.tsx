@@ -9,6 +9,8 @@ import { PublicView } from './views/public/PublicViews';
 import { IntakeView } from './views/intake/IntakeViews';
 import { CoordinatorView } from './views/coordinator/CoordinatorViews';
 import { CouncilView, CreativeProfileView } from './views/council/CouncilViews';
+import { CouncilOpportunityView } from './views/council/OpportunityViews';
+import { CreativeReferralView } from './views/intake/CreativeReferralViews';
 
 const INTAKE_FOCUS_TARGETS: Record<string, string> = {
   name: 'intake-name',
@@ -141,6 +143,8 @@ function ViewPage({ view }: { view: ViewDef }) {
     const recordId = state.data.records.find((record) => record.personId === actor.id)?.id ?? 'none';
     return <><PageHeader id={view.id} title={view.title} /><CreativeProfileView key={`${actor.id}:${recordId}`} /></>;
   }
+  if (view.id === 'C03') return <><PageHeader id={view.id} title={view.title} /><CreativeReferralView /></>;
+  if (view.id === 'M03' || view.id === 'M04' || view.id === 'M05') return <><PageHeader id={view.id} title={view.title} /><CouncilOpportunityView id={view.id} /></>;
   return (
     <>
       <PageHeader id={view.id} title={view.title} />

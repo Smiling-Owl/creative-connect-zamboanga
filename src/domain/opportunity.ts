@@ -27,8 +27,14 @@ const MATERIAL_FIELDS = ['dateLabel', 'locationMode', 'costLabel'] as const;
 export function validateOpportunity(input: OpportunityInput): string | null {
   if (input.title.trim() === '') return 'Add a title.';
   if (input.provider.trim() === '') return 'Name the provider. Use a fictional name in this prototype.';
+  if (input.description.trim() === '') return 'Describe what participants can expect.';
+  if (input.costLabel.trim() === '') return 'Describe the cost or say if there is no fee.';
+  if (input.ownerId.trim() === '') return 'Name the responsible council owner.';
   if (!Number.isInteger(input.capacity) || input.capacity < 1) return 'Capacity must be a whole number of at least 1.';
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.deadline)) return 'Set a deadline in the form YYYY-MM-DD.';
+  const deadline = new Date(`${input.deadline}T00:00:00.000Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.deadline) || Number.isNaN(deadline.getTime()) || deadline.toISOString().slice(0, 10) !== input.deadline) {
+    return 'Set a real calendar deadline in the form YYYY-MM-DD.';
+  }
   if (input.dateLabel.trim() === '') return 'Describe the date or schedule.';
   if (input.locationMode.trim() === '') return 'Describe the location or delivery mode.';
   if (input.eligibility.trim() === '') return 'Describe who is eligible.';

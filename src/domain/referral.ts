@@ -225,6 +225,7 @@ export function withdrawReferral(data: DomainData, ctx: Ctx, input: { referralId
 
 /** Council records what happened. Outcomes mean support was received, never paid work or income. */
 export function recordOutcome(data: DomainData, ctx: Ctx, input: { referralId: string; outcome: OutcomeState }): Result {
+  if (!OUTCOME_STATES.includes(input.outcome)) return fail('invalid_outcome', 'Choose one of the listed support outcomes.');
   return transitionFromCouncil(data, ctx, input.referralId, ['confirmed', 'awaiting_follow_up'], input.outcome, { requirePublished: false });
 }
 

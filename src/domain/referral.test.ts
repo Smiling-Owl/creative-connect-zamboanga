@@ -102,6 +102,16 @@ describe('offer, response, and confirmation', () => {
   });
 });
 
+describe('outcome validation', () => {
+  it('rejects values outside the three recorded support outcomes without mutation', () => {
+    const data = fresh();
+    const before = JSON.stringify(data);
+    const invalid = recordOutcome(data, ctxFor('council'), { referralId: 'ref-0001', outcome: 'keep' as never });
+    expect(invalid).toMatchObject({ ok: false, code: 'invalid_outcome' });
+    expect(JSON.stringify(data)).toBe(before);
+  });
+});
+
 describe('one invitation per pair and idempotency', () => {
   it('invitation over an existing interest moves it to offered without a second referral', () => {
     const data = fresh();

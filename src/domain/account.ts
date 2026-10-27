@@ -35,7 +35,7 @@ export function claimRecord(data: DomainData, ctx: Ctx, input: { code: string })
   if (!record) return fail('invalid_code', 'That invitation code is not valid. Check it with your coordinator, or ask for a new one.');
   if (record.personId) return fail('already_claimed', 'This record is already linked to an account. Use access recovery if that is not you.');
   if (data.records.some((r) => r.personId === ctx.actor.id)) {
-    return fail('already_has_record', 'Your account already has a record. Ask the council to combine the two records.');
+    return fail('already_has_record', 'Your account already has a record. Ask the council to review and link any duplicate records.');
   }
 
   const next = cloneData(data);
