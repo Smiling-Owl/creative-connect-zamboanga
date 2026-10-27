@@ -4,7 +4,7 @@ A browser-only clickable prototype for a proposed community-assisted creative on
 
 ## Current iteration
 
-The foundation and domain layer are present. Feature 03 adds public discovery, guidance, and simulated access:
+The foundation and domain layer are present. Feature 03 provides public discovery, guidance, and simulated access:
 
 - Program introduction and registration-assistance information.
 - Searchable public directory and privacy-filtered creative profiles.
@@ -12,7 +12,11 @@ The foundation and domain layer are present. Feature 03 adds public discovery, g
 - Example guidance with neutral source labels.
 - Simulated sign-in, sign-up/verification, invitation claiming, staff access, and recovery.
 
-Intake, coordinator operations, council review, and the full referral-to-outcome screens are subsequent iterations. Their routes remain clearly labeled placeholders. Registration started from an opportunity retains that context for the later intake workflow; full post-submission return is not yet a completed user journey.
+Feature 04 adds the shared creative/coordinator intake, draft progress, private/public choices, submission receipts, and the creative home/application status view. It includes the creative-side correction and human-review request paths. Registration started from an opportunity retains its context through submission and provides a return link.
+
+Coordinator queue management, council review screens, profile maintenance, and the full referral-to-outcome screens are subsequent iterations. Their routes remain clearly labeled placeholders. Council decisions for the current correction/status demonstrations can be arranged by the existing fictional domain fixtures and tests; a council review interface is not yet implemented.
+
+The form accepts text descriptions of work; no uploads, polished portfolio, business permit, or government ID are required. Public listing is a separate choice, initially off for a new application, and refusing it does not block support. A draft profile preview is not a public listing.
 
 ## Run locally
 

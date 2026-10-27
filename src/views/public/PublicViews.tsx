@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { Button, Notice, Simulated, StatusBadge } from '../../components/ui';
+import { PublicProfileCard } from '../../components/PublicProfileCard';
 import { GUIDANCE, GUIDANCE_DISCLAIMER } from '../../fixtures/guidance';
 import { PERSONAS } from '../../fixtures/personas';
 import { OPPORTUNITY_LABEL, REFERRAL_LABEL } from '../../labels';
@@ -73,7 +74,7 @@ function PublicProfileView() {
   const { state } = useDemo();
   const profile = publicProfileById(state.data, profileId);
   if (!profile) return <section className="public-card"><h2>This profile is not publicly listed</h2><p>It may be private or no longer available.</p><Link to="/directory">Return to the directory</Link></section>;
-  return <article className="public-card"><p className="eyebrow">Public profile · fictional</p><h2>{profile.displayName}</h2><p>{profile.practice} · {profile.area}</p><h3>Skills</h3><ul>{profile.skills.map((skill) => <li key={skill}>{skill}</li>)}</ul><h3>Work examples</h3>{profile.evidence.length ? <ul>{profile.evidence.map((e, i) => <li key={`${e.kind}-${i}`}><span className="badge badge-neutral">Sample (fictional)</span> {e.text}</li>)}</ul> : <p>No public work examples have been approved.</p>}<p className="muted">Last confirmed {profile.lastUpdated.slice(0, 10)}</p><section className="notice notice-info"><h3>Ask the council about this creative</h3><p>{'Council contact route (placeholder — not yet approved). No inquiry is sent from this prototype.'}</p></section></article>;
+  return <PublicProfileCard profile={profile} eyebrow="Public profile · fictional"><section className="notice notice-info"><h3>Ask the council about this creative</h3><p>{'Council contact route (placeholder — not yet approved). No inquiry is sent from this prototype.'}</p></section></PublicProfileCard>;
 }
 
 function Opportunities() {
@@ -154,8 +155,8 @@ function Access() {
   const returnOpportunityId = state.data.opportunities.find((opportunity) => returnTo === `/opportunities/${opportunity.id}`)?.id ?? null;
   const returnToHref = returnOpportunityId ? `/opportunities/${returnOpportunityId}` : null;
   useEffect(() => {
-    if (hasReturnTo) setAccess({ returnOpportunityId });
-  }, [hasReturnTo, returnOpportunityId, setAccess]);
+    if (hasReturnTo) setAccess({ returnOpportunityId, returnOpportunityOwnerId: actor.role === 'creative' ? actor.id : null });
+  }, [actor.id, actor.role, hasReturnTo, returnOpportunityId, setAccess]);
   const [contact, setContact] = useState(state.access.signupContact);
   const [code, setCode] = useState('INV-DEMO-DANI');
   const [verificationCode, setVerificationCode] = useState('');
@@ -173,8 +174,8 @@ function Access() {
   };
   const signup = () => { setAccess({ signupContact: contact, signupStatus: 'verification_pending' }); goMode('verify'); };
   const complete = () => {
-    setPersona('jun');
-    setAccess({ signupContact: contact, signupStatus: 'verified' });
+    const target = PERSONAS.find((p) => p.id === 'jun')!;
+    setPersona(target.id);
     const draft = state.data.drafts.find((item) => item.ownerId === 'person-jun' && item.recordId === null);
     if (draft) {
       const result = run((data, ctx) => saveDraft(data, ctx, {
@@ -185,7 +186,8 @@ function Access() {
       }));
       if (!result.ok) setFeedback(result.message);
     }
-    const opportunityId = returnOpportunityId ?? (!hasReturnTo ? state.access.returnOpportunityId : null);
+    const opportunityId = returnOpportunityId ?? (!hasReturnTo && state.access.returnOpportunityOwnerId === target.actor.id ? state.access.returnOpportunityId : null);
+    setAccess({ signupContact: contact, signupStatus: 'verified', returnOpportunityId: opportunityId, returnOpportunityOwnerId: opportunityId ? target.actor.id : null });
     navigate(opportunityId ? `/apply?returnTo=${encodeURIComponent(opportunityId)}` : '/apply');
   };
   return <div className="public-stack"><Simulated>no credentials are processed or sent. Values stay in this browser demo.</Simulated>

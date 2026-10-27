@@ -6,13 +6,21 @@ import type { DemoSettings, DomainData } from '../domain/types';
 // Every storage call is guarded: private windows and blocked storage must not break the prototype.
 
 export const STORAGE_KEY = 'ccz-demo:v1';
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export interface DemoAccessState {
   recovery: 'idle' | 'code_requested' | 'expired' | 'help';
   returnOpportunityId: string | null;
+  returnOpportunityOwnerId: string | null;
   signupContact: string;
   signupStatus: 'idle' | 'verification_pending' | 'verified';
+}
+
+export interface IntakeUiState {
+  step: 1 | 2 | 3;
+  optedIn: boolean;
+  submission: { kind: 'received' | 'queued'; id: string } | null;
+  returnOpportunityId: string | null;
 }
 
 export interface AppState {
@@ -23,6 +31,8 @@ export interface AppState {
   clock: number;
   data: DomainData;
   access: DemoAccessState;
+  /** Per-owner and per-record form progress; never copied between personas. */
+  intakeUi: Record<string, IntakeUiState>;
 }
 
 export function initialState(): AppState {
@@ -32,7 +42,8 @@ export function initialState(): AppState {
     settings: { online: true, failNextSend: false },
     clock: 0,
     data: baselineData(),
-    access: { recovery: 'idle', returnOpportunityId: null, signupContact: 'rhea@example.invalid', signupStatus: 'idle' },
+    access: { recovery: 'idle', returnOpportunityId: null, returnOpportunityOwnerId: null, signupContact: 'rhea@example.invalid', signupStatus: 'idle' },
+    intakeUi: {},
   };
 }
 
@@ -42,6 +53,22 @@ function isDomainData(value: unknown): value is DomainData {
   if (typeof value !== 'object' || value === null) return false;
   const candidate = value as Record<string, unknown>;
   return typeof candidate.seq === 'number' && DATA_ARRAYS.every((key) => Array.isArray(candidate[key]));
+}
+
+function isIntakeUi(value: unknown): value is Record<string, IntakeUiState> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
+  return Object.values(value).every((entry) => {
+    if (typeof entry !== 'object' || entry === null) return false;
+    const item = entry as Record<string, unknown>;
+    const submission = item.submission;
+    const validSubmission = submission === null || (
+      typeof submission === 'object' && submission !== null &&
+      ['received', 'queued'].includes(String((submission as Record<string, unknown>).kind)) &&
+      typeof (submission as Record<string, unknown>).id === 'string'
+    );
+    return [1, 2, 3].includes(Number(item.step)) && typeof item.optedIn === 'boolean' && validSubmission &&
+      (item.returnOpportunityId === null || typeof item.returnOpportunityId === 'string');
+  });
 }
 
 function isAppState(value: unknown): value is AppState {
@@ -60,8 +87,10 @@ function isAppState(value: unknown): value is AppState {
     typeof candidate.access === 'object' && candidate.access !== null &&
     ['idle', 'code_requested', 'expired', 'help'].includes(String((candidate.access as Record<string, unknown>).recovery)) &&
     ((candidate.access as Record<string, unknown>).returnOpportunityId === null || typeof (candidate.access as Record<string, unknown>).returnOpportunityId === 'string') &&
+    ((candidate.access as Record<string, unknown>).returnOpportunityOwnerId === null || typeof (candidate.access as Record<string, unknown>).returnOpportunityOwnerId === 'string') &&
     typeof (candidate.access as Record<string, unknown>).signupContact === 'string' &&
-    ['idle', 'verification_pending', 'verified'].includes(String((candidate.access as Record<string, unknown>).signupStatus))
+    ['idle', 'verification_pending', 'verified'].includes(String((candidate.access as Record<string, unknown>).signupStatus)) &&
+    isIntakeUi(candidate.intakeUi)
   );
 }
 

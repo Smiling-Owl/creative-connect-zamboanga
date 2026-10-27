@@ -500,6 +500,76 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+.intake-layout {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.intake-layout .public-card {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.intake-stepper ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.intake-stepper li {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.step-button {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.step-button.is-current {
+  border-color: var(--color-accent);
+  background: var(--tone-info-bg);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.compact-readback {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+.compact-readback dt {
+  font-weight: 600;
+}
+
+.compact-readback dd {
+  min-width: 0;
+  margin: 0 0 var(--space-3);
+}
+
+.readback-group {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.readback-group h3 {
+  margin-bottom: 0;
+}
+
 @media (min-width: 640px) {
   .public-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -512,5 +582,13 @@ textarea {
 
   .detail-list dt:not(:first-child) {
     margin-top: 0;
+  }
+
+  .compact-readback {
+    grid-template-columns: minmax(8rem, 0.35fr) minmax(0, 1fr);
+  }
+
+  .compact-readback dd {
+    margin-bottom: var(--space-2);
   }
 }

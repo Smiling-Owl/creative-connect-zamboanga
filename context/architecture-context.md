@@ -6,13 +6,24 @@ Decision markers: **APPROVED** (decided by the team), **PROPOSED** (recommended;
 
 A single static, client-only single-page application. All "system" behavior — accounts, roles, the council's records, the coordinator's device queue, connectivity, review decisions, referrals — is simulated inside one in-browser demo store seeded from fictional fixtures. There is no server, database, API, or network dependency at runtime.
 
+### Feature 04 implementation notes — 2026-10-27
+
+- `src/views/intake/IntakeViews.tsx` implements the shared R01/R02 intake and C01 creative status views. Coordinator capture uses the same form with actor-derived, read-only source attribution. Later coordinator/council/profile/referral workspaces remain placeholders.
+- The existing storage envelope now uses `schemaVersion: 3`. `intakeUi` stores the last step, separate public-listing choice, receipt context, and bounded opportunity return context alongside domain drafts. Metadata keys include the acting owner's ID, including after the submitted draft is removed. Older envelopes reset with the compatibility notice.
+- Intake uses structured domain validation for field messages and a linked error summary. Whitespace-only skills, evidence, and own-channel labels are rejected. A description is valid work evidence; a portfolio URL, upload, permit, or ID is not required.
+- Error-summary actions focus the current field or navigate to the saved intake step with a focus target. They do not use fragment-only anchors, which would be interpreted as routes by `HashRouter`.
+- `projectPublicIntake` creates an allow-listed draft preview. R02 and P03 share `PublicProfileCard`; draft copy states that the preview is unpublished. Private readback information never enters the preview projection.
+- Online submissions and corrections use domain transitions. Corrections retain the existing record/reference and persist the explicit listing choice, including queued correction delivery. Offline self-service keeps a draft; coordinator submissions can receive a device reference while remaining unreceived by the council.
+- C01 derives status, reasons, history, and notifications from domain state. A declined application can open one human-review case; this does not reverse the council decision. Feature 06 still owns council review screens.
+- Actual intake receipts now complete the Feature 03 return-to-opportunity path. A bounded public opportunity ID is retained, never an arbitrary return URL. Pending registration context is bound to its intended creative so a coordinator's separate capture cannot consume it.
+
 ### Feature 03 implementation notes — 2026-10-27
 
-- Public and simulated-access views live in `src/views/public/PublicViews.tsx`, selected by existing view IDs from `App.tsx`. Other feature views remain explicit placeholders.
+- Public and simulated-access views live in `src/views/public/PublicViews.tsx`, selected by existing view IDs from `App.tsx`. Feature 04 adds intake/status views; later feature views remain explicit placeholders.
 - `OpportunityDetail` is exported for later role views. Public creative data uses the allow-listed projection. Exact skill filtering extends the existing directory selector.
-- The demo envelope is now `schemaVersion: 2` under the existing `ccz-demo:v1` storage key. Older envelopes reset through the compatibility notice. New `access` state tracks recovery, a validated pending opportunity ID, fictional sign-up contact, and sign-up/verification stage.
+- Feature 03 introduced `schemaVersion: 2` under the existing `ccz-demo:v1` storage key (superseded by version 3 in Feature 04). `access` state tracks recovery, a validated pending opportunity ID, fictional sign-up contact, and sign-up/verification stage.
 - Simulated sign-up updates the selected fictional creative's draft through `saveDraft`. Existing receipt-time duplicate detection flags a matching assisted contact when intake is eventually submitted. Drafts are not sent to the council by sign-up.
-- Opportunity origin accepts only a known public opportunity route; arbitrary return URLs are not rendered. Origin is persisted and shown at the intake placeholder. Full post-submission return remains a Feature 04 integration check.
+- Opportunity origin accepts only a known public opportunity route; arbitrary return URLs are not rendered. Feature 04 completes its post-submission return path.
 - `deadlinePassed` in `domain/core.ts` uses the deterministic demo date. New interest, invitations, and offers are blocked after the deadline; the deadline date itself remains valid. Closed/cancelled status takes precedence over expired-publication wording.
 - Playwright accepts `PLAYWRIGHT_PORT` (default 4173). Verification used 4187 to avoid an occupied default port; application runtime behavior is unchanged.
 
@@ -263,4 +274,4 @@ Recorded after the Feature 01–02 implementation and the first Opus review. Eac
 | Changes to public content on a verified record (display name, area, practice, skills, public evidence) and to substantive fields set an update for council review. The listing choice does not. A coordinator's follow-up arrangement stays on the record until a coordinator changes it | PROPOSED |
 | Public listing uses a fingerprint of the public fields. Any change to them hides the listing until the council approves the new content | PROPOSED |
 
-Not yet built: sign-up that flags a possible duplicate, and access recovery. Both have no domain code yet and move to Feature 03; this move needs the team's acceptance. The notice and funnel selectors exist; their screens belong to Feature 08.
+Subsequent implementation: Feature 03 added simulated sign-up and access recovery; receipt-time contact matching flags a possible duplicate when intake is submitted. The notice and funnel selectors exist; their council screens belong to Feature 08.

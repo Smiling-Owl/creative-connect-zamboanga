@@ -39,6 +39,12 @@ describe('validateIntake', () => {
   it('requires the information-use acknowledgment', () => {
     expect(validateIntake(completeFields({ acknowledged: false }))).toMatch(/information-use notice/);
   });
+
+  it('rejects blank skills, blank evidence, and an empty own-channel label', () => {
+    expect(validateIntake(completeFields({ skills: ['   '] }))).not.toBeNull();
+    expect(validateIntake(completeFields({ evidence: [{ id: 'blank', kind: 'sample', text: '   ', publicApproved: false }] }))).not.toBeNull();
+    expect(validateIntake(completeFields({ followUp: { kind: 'own_channel', channelLabel: '  ' } }))).not.toBeNull();
+  });
 });
 
 describe('drafts', () => {
@@ -75,6 +81,17 @@ describe('drafts', () => {
 });
 
 describe('submission and receipt', () => {
+  it('applies the public-listing choice on correction resubmission', () => {
+    const start = fresh();
+    const current = start.records.find((record) => record.id === 'rec-gwen')!;
+    const fields = completeFields({ ...current.intake, evidence: [{ id: 'gwen-correction', kind: 'sample', text: 'Updated sample description (fictional)', publicApproved: false }], displayName: current.intake.displayName, followUp: current.intake.followUp });
+    const saved = saveDraft(start, ctxFor('coord-a'), { draftId: null, recordId: current.id, source: SOURCE_A, fields });
+    if (!saved.ok) throw new Error(saved.message);
+    const submitted = submitIntake(saved.data, ctxFor('coord-a'), { draftId: saved.id!, optedIn: true });
+    if (!submitted.ok) throw new Error(submitted.message);
+    expect(submitted.data.records.find((record) => record.id === current.id)?.optedIn).toBe(true);
+  });
+
   it('online submission creates one record and one application on receipt, and removes the draft', () => {
     const start = fresh();
     const before = start.records.length;
@@ -114,6 +131,19 @@ describe('submission and receipt', () => {
     const item = queued.data.queue.find((q) => q.id === queued.id)!;
     expect(item.status).toBe('waiting');
     expect(item.deviceRef).toMatch(/^DEV-A-\d{3}$/);
+  });
+
+  it('applies the public-listing choice when a queued correction is delivered', () => {
+    const data = fresh();
+    const current = data.records.find((record) => record.id === 'rec-gwen')!;
+    const fields = completeFields({ ...current.intake, evidence: [{ id: 'gwen-queued', kind: 'sample', text: 'Updated sample description (fictional)', publicApproved: false }], followUp: current.intake.followUp });
+    const saved = saveDraft(data, ctxFor('coord-a'), { draftId: null, recordId: current.id, source: SOURCE_A, fields });
+    if (!saved.ok) throw new Error(saved.message);
+    const queued = enqueueSubmission(saved.data, ctxFor('coord-a', { online: false }), { draftId: saved.id!, optedIn: true });
+    if (!queued.ok) throw new Error(queued.message);
+    const delivered = syncQueue(queued.data, ctxFor('coord-a'), { itemId: queued.id });
+    if (!delivered.ok) throw new Error(delivered.message);
+    expect(delivered.data.records.find((record) => record.id === current.id)?.optedIn).toBe(true);
   });
 
   it('refuses to queue when connected, and refuses offline sync', () => {

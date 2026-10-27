@@ -1,5 +1,5 @@
 import { isListed } from './visibility';
-import type { CreativeRecord, DomainData } from './types';
+import type { CreativeRecord, DomainData, IntakeFields } from './types';
 
 // The only path from creative records to public views. Allow-listed fields only.
 // Never add contact details, legal names, non-approved evidence, notes, history, site, or references here.
@@ -19,18 +19,23 @@ export interface PublicProfile {
   lastUpdated: string;
 }
 
-function project(record: CreativeRecord): PublicProfile {
+/** Allow-listed projection for a proposed profile preview or approved record. */
+export function projectPublicIntake(id: string, fields: IntakeFields, lastUpdated: string): PublicProfile {
   return {
-    id: record.id,
-    displayName: record.intake.displayName,
-    practice: record.intake.practice,
-    skills: [...record.intake.skills],
-    area: record.intake.area,
-    evidence: record.intake.evidence
-      .filter((e) => e.publicApproved)
+    id,
+    displayName: fields.displayName,
+    practice: fields.practice,
+    skills: [...fields.skills],
+    area: fields.area,
+    evidence: fields.evidence
+      .filter((e) => e.publicApproved && e.text.trim() !== '')
       .map((e) => ({ kind: e.kind, text: e.text })),
-    lastUpdated: record.lastConfirmed,
+    lastUpdated,
   };
+}
+
+function project(record: CreativeRecord): PublicProfile {
+  return projectPublicIntake(record.id, record.intake, record.lastConfirmed);
 }
 
 /** Public profile for a listed record, or null. Private and unknown ids look identical to callers. */

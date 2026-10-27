@@ -36,15 +36,20 @@ src/
   fixtures/                # fictional baseline data, personas, guidance examples
   state/                   # store and versioned persistence (+ tests)
   components/ui.tsx        # shared primitives (button, badge, notice, dialog with focus trap)
+  components/PublicProfileCard.tsx # allow-listed public profile and draft-preview rendering
+  views/public/           # public discovery and simulated access
+  views/intake/           # shared intake/review and creative application status
   demo/DemoControls.tsx    # demo controls outside the product chrome
   styles/                  # tokens.css, base.css
   test/                    # Vitest setup and helpers
-tests/e2e/                 # Playwright journeys (shell so far; journeys and accessibility to follow)
+tests/e2e/                 # Playwright shell, public/access, intake/status journeys and accessibility
 ```
 
-Planned names that changed during implementation: `permissions.ts` became `policy.ts`, and `references.ts` became `core.ts`. Views are still single placeholder screens in `App.tsx` until their features land. Each feature moves its view into `src/views/<area>/`. Domain modules never import from `state/`, `components/`, or `views/`.
+Planned names that changed during implementation: `permissions.ts` became `policy.ts`, and `references.ts` became `core.ts`. Unbuilt views remain explicit placeholders in `App.tsx`. Each feature moves its view into `src/views/<area>/`. Domain modules never import from `state/`, `components/`, or `views/`.
 
 Feature 03 update (2026-10-27): P01–P06 and A01–A02 are implemented in `src/views/public/PublicViews.tsx`; other feature views remain placeholders. `OpportunityDetail` is exported for reuse. `tests/e2e/public-access.spec.ts` covers public/access journeys, private-profile boundaries, bounded return context, recovery, accessibility, and narrow-screen rendering. Directory filtering now includes an exact skill option.
+
+Feature 04 update (2026-10-27): R01/R02 and C01 live in `src/views/intake/IntakeViews.tsx`. `intakeValidationErrors` supplies field keys/messages; `validateIntake` retains the domain result contract. `projectPublicIntake` produces an unpublished preview using the same allow-list boundary and `PublicProfileCard` as P03. UI progress/receipt context is persisted separately from domain draft fields in schema version 3. `tests/e2e/intake.spec.ts` covers intake/status and alternate branches without adding production test backdoors or council-review screens.
 
 ## Naming
 
@@ -105,7 +110,7 @@ No telemetry or remote logging. `console` output is limited to development warni
 
 ## Performance
 
-- Keep the production bundle small (target under 200 KB gzipped JS, PROPOSED). Current: about 96 KB. No images or fonts beyond inline SVG icons.
+- Keep the production bundle small (target under 200 KB gzipped JS, PROPOSED). Current: about 104.5 KB. No images or fonts beyond inline SVG icons.
 - Code-split by role area only if the bundle target is exceeded.
 
 ## Accessibility
@@ -114,18 +119,18 @@ Follow `ui-context.md` → Accessibility. Every new view must pass the axe scan 
 
 ## Verification Commands
 
-Current iteration verified on 2026-10-27 (Windows). Re-run before citing these results for later code changes. Sol Senior reviewed the source; a Luna worker implemented Feature 03. The requested model name “6.1 Luna” was unavailable, so the exposed `gpt-6-luna` worker role was used and disclosed.
+Current iteration verified on 2026-10-27 (Windows). Re-run before citing these results for later code changes. Sol Senior reviewed the source; a Luna worker implemented Feature 04. The requested model name “6.1 Luna” was unavailable, so the exposed `gpt-6-luna` worker role was used and disclosed.
 
 | Command | What it checks | Last result |
 |---|---|---|
 | `npm ci --no-audit --no-fund` | Clean install from the lockfile | exit 0; 237 packages |
 | `npm run typecheck` | `tsc --noEmit`, strict | exit 0 |
 | `npm run lint` | ESLint with typescript-eslint and react-hooks rules | exit 0 |
-| `npm test` | Vitest unit tests, single run | 121 passed (14 files) |
-| `npm run build` | Typecheck, then static build to `dist/` | exit 0, including browser-suite rebuild; about 96 KB gzipped JS |
+| `npm test` | Vitest unit tests, single run | 125 passed (14 files) |
+| `npm run build` | Typecheck, then static build to `dist/` | exit 0, including browser-suite rebuild; 104.48 KB gzipped JS |
 | `npm run preview` | Serves `dist/` locally (demo fallback) | used by the e2e run |
-| `npm run test:e2e` | Playwright (Chromium), which builds and serves `dist/` | 17 passed with `PLAYWRIGHT_PORT=4187`; includes axe and 320 px checks |
+| `npm run test:e2e` | Playwright (Chromium), which builds and serves `dist/` | 25 passed with `PLAYWRIGHT_PORT=4188`; includes intake keyboard completion and axe/320/360 px checks |
 
-Chromium needs a one-time install: `npx playwright install chromium`. That install and `npm run dev -- --host 127.0.0.1 --port 4175 --strictPort` were verified this iteration. Desktop/mobile screenshots and browser-exception checks were performed on public/access views. Manual screen-reader testing and full 200% zoom coverage remain unverified.
+Chromium needs a one-time install: `npx playwright install chromium` (already installed on the presenting machine). This iteration used Vite on port 4190 for desktop/mobile intake, review, and status screenshots and browser-exception checks. The prior public/access checks remain in the browser suite. Manual screen-reader testing and full 200% zoom coverage remain unverified.
 
 Do not cite a command as passing unless its result is recorded here from a run in the current session.

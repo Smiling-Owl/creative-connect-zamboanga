@@ -16,20 +16,33 @@ import type {
 // A record exists only after the council receives it. Queued items are not records.
 // Review runs in order: received → under_review → verified (or changes requested / declined).
 
-export function validateIntake(fields: IntakeFields): string | null {
-  if (fields.displayName.trim() === '') return 'Add a display name. It can be a first name or a nickname.';
-  if (fields.name.trim() === '') return 'Add a name for the council record.';
-  if (fields.practice.trim() === '') return 'Choose a creative practice.';
-  if (fields.area.trim() === '') return 'Choose a broad area.';
-  if (fields.skills.length === 0) return 'Add at least one skill.';
-  if (fields.evidence.length === 0) {
-    return 'Add at least one piece of work evidence: a link, a sample description, or a description given in person. A polished portfolio is not required.';
+export interface IntakeValidationError {
+  field: string;
+  message: string;
+}
+
+export function intakeValidationErrors(fields: IntakeFields): IntakeValidationError[] {
+  const errors: IntakeValidationError[] = [];
+  if (fields.displayName.trim() === '') errors.push({ field: 'displayName', message: 'Add a display name. It can be a first name or a nickname.' });
+  if (fields.name.trim() === '') errors.push({ field: 'name', message: 'Add a name for the council record.' });
+  if (fields.practice.trim() === '') errors.push({ field: 'practice', message: 'Choose a creative practice.' });
+  if (fields.area.trim() === '') errors.push({ field: 'area', message: 'Choose a broad area.' });
+  if (!fields.skills.some((skill) => skill.trim() !== '')) errors.push({ field: 'skills', message: 'Add at least one non-empty skill.' });
+  if (!fields.evidence.some((item) => item.text.trim() !== '')) {
+    errors.push({ field: 'evidence', message: 'Describe at least one piece of work evidence. A polished portfolio is not required.' });
   }
   if (fields.followUp.kind === 'coordinator_mediated' && fields.followUp.coordinatorId.trim() === '') {
-    return 'Name the coordinator who will follow up.';
+    errors.push({ field: 'followUp', message: 'Name the coordinator who will follow up.' });
   }
-  if (!fields.acknowledged) return 'Confirm the information-use notice before sending.';
-  return null;
+  if (fields.followUp.kind === 'own_channel' && fields.followUp.channelLabel.trim() === '') {
+    errors.push({ field: 'followUp', message: 'Choose a follow-up route or ask for coordinator help.' });
+  }
+  if (!fields.acknowledged) errors.push({ field: 'acknowledged', message: 'Confirm the information-use notice before sending.' });
+  return errors;
+}
+
+export function validateIntake(fields: IntakeFields): string | null {
+  return intakeValidationErrors(fields)[0]?.message ?? null;
 }
 
 /**
@@ -111,12 +124,24 @@ export function receiveNewApplication(
 }
 
 /** Applies a received correction or resubmission to an existing record. Mutates the cloned data. */
-function applyReceivedFields(d: DomainData, ctx: Ctx, recordId: string, fields: IntakeFields, viaId: string | null): void {
+export function applyReceivedFields(
+  d: DomainData,
+  ctx: Ctx,
+  recordId: string,
+  fields: IntakeFields,
+  viaId: string | null,
+  optedIn?: boolean,
+): void {
   const target = findRecord(d, recordId)!;
   const before = target.intake;
   const wasVerified = target.application.state === 'verified';
   target.intake = fields;
   target.lastConfirmed = ctx.at;
+  if (optedIn !== undefined && target.optedIn !== optedIn) {
+    const from = target.optedIn ? 'on' : 'off';
+    target.optedIn = optedIn;
+    log(d, ctx, { entityType: 'record', entityId: recordId, action: 'listing_choice_changed', from, to: optedIn ? 'on' : 'off', viaId });
+  }
   if (wasVerified) {
     if (isSubstantiveChange(before, fields)) target.application.updatePending = true;
     // A new creative edit answers any earlier request for changes to the update.
@@ -159,7 +184,7 @@ export function submitIntake(data: DomainData, ctx: Ctx, input: { draftId: strin
     if (record.application.state !== 'changes_requested') {
       return fail('not_correctable', 'This record is not waiting for changes, so there is nothing to resubmit.');
     }
-    applyReceivedFields(next, ctx, record.id, draft.fields, ctx.actor.role === 'coordinator' ? ctx.actor.id : null);
+    applyReceivedFields(next, ctx, record.id, draft.fields, ctx.actor.role === 'coordinator' ? ctx.actor.id : null, input.optedIn);
     return { ok: true, data: next, id: record.id };
   }
 

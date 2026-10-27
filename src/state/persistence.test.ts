@@ -38,17 +38,19 @@ describe('demo state persistence', () => {
     expect(result.notice).toBeNull();
     expect(result.state.personaId).toBe('guest');
     expect(result.state.data.records.length).toBeGreaterThan(0);
-    expect(result.state.access).toEqual({ recovery: 'idle', returnOpportunityId: null, signupContact: 'rhea@example.invalid', signupStatus: 'idle' });
+    expect(result.state.access).toEqual({ recovery: 'idle', returnOpportunityId: null, returnOpportunityOwnerId: null, signupContact: 'rhea@example.invalid', signupStatus: 'idle' });
+    expect(result.state.intakeUi).toEqual({});
   });
 
   it('restores a saved state round trip', () => {
     const storage = memoryStorage();
-    const state = { ...initialState(), personaId: 'council', clock: 42, access: { recovery: 'expired' as const, returnOpportunityId: 'opp-clinic', signupContact: 'demo@example.invalid', signupStatus: 'verified' as const } };
+    const state = { ...initialState(), personaId: 'council', clock: 42, access: { recovery: 'expired' as const, returnOpportunityId: 'opp-clinic', returnOpportunityOwnerId: 'person-jun', signupContact: 'demo@example.invalid', signupStatus: 'verified' as const }, intakeUi: { 'person-jun|new': { step: 3 as const, optedIn: true, submission: null, returnOpportunityId: null } } };
     saveState(state, storage);
     const loaded = loadState(storage);
     expect(loaded.state.personaId).toBe('council');
     expect(loaded.state.clock).toBe(42);
-    expect(loaded.state.access).toEqual({ recovery: 'expired', returnOpportunityId: 'opp-clinic', signupContact: 'demo@example.invalid', signupStatus: 'verified' });
+    expect(loaded.state.access).toEqual({ recovery: 'expired', returnOpportunityId: 'opp-clinic', returnOpportunityOwnerId: 'person-jun', signupContact: 'demo@example.invalid', signupStatus: 'verified' });
+    expect(loaded.state.intakeUi).toEqual({ 'person-jun|new': { step: 3, optedIn: true, submission: null, returnOpportunityId: null } });
     expect(loaded.notice).toBeNull();
   });
 

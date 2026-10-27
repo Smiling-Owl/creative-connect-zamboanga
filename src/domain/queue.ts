@@ -1,6 +1,6 @@
 import { can } from './policy';
 import { cloneData, fail, findRecord, log } from './core';
-import { receiveNewApplication } from './application';
+import { applyReceivedFields, receiveNewApplication } from './application';
 import type { Ctx, DomainData, QueueItem, Result } from './types';
 
 // Device queue on a coordinator's approved device. An item reaches the council only when a
@@ -65,11 +65,7 @@ export function syncQueue(data: DomainData, ctx: Ctx, input: { itemId?: string }
       continue;
     }
 
-    record.intake = item.fields;
-    record.application.version += 1;
-    record.application.state = 'received';
-    record.application.reason = null;
-    record.lastConfirmed = ctx.at;
+    applyReceivedFields(next, ctx, record.id, item.fields, ctx.actor.id, item.optedIn);
     item.status = 'delivered';
     item.deliveredRecordId = record.id;
     item.lastError = null;

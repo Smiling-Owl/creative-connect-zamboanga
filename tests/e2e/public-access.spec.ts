@@ -31,8 +31,9 @@ test('opportunity registration and assistance both retain their return destinati
   await expect(page.getByText('Nothing is sent.')).toBeVisible();
   await page.getByLabel('Simulated code').fill('000000');
   await page.getByRole('button', { name: 'Complete demo verification and continue' }).click();
-  await expect(page.getByText(/started registration from Portfolio Feedback Clinic/)).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Return to this opportunity after intake' })).toHaveAttribute('href', '#/opportunities/opp-clinic');
+  await expect(page.getByRole('heading', { name: 'About you' })).toBeVisible();
+  await expect(page.getByText('You started from Portfolio Feedback Clinic')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Return to the opportunity you started from' })).toHaveAttribute('href', '#/opportunities/opp-clinic');
   await page.locator('.demo-bar details summary').click();
   await page.getByLabel('Persona').selectOption({ label: 'Guest visitor' });
   await page.goto('./#/opportunities/opp-clinic');

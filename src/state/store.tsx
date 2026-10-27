@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { personaById, type Persona } from '../fixtures/personas';
 import type { Actor, Ctx, DomainData, Result } from '../domain/types';
-import { clearState, getStorage, initialState, loadState, saveState, type AppState, type DemoAccessState } from './persistence';
+import { clearState, getStorage, initialState, loadState, saveState, type AppState, type DemoAccessState, type IntakeUiState } from './persistence';
 
 // Single demo store. Views read state and call `run` with a domain function.
 // `run` reads the latest state synchronously, so the caller gets the result in the same event handler.
@@ -17,6 +17,7 @@ export type DomainFn = (data: DomainData, ctx: Ctx) => Result;
 export interface DemoStore {
   state: AppState;
   setAccess: (access: Partial<DemoAccessState>) => void;
+  setIntakeUi: (key: string, value: Partial<IntakeUiState>) => void;
   persona: Persona;
   actor: Actor;
   notice: string | null;
@@ -84,6 +85,14 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
     [commit],
   );
 
+  const setIntakeUi = useCallback(
+    (key: string, value: Partial<IntakeUiState>) => {
+      const current = latest.current.intakeUi[key] ?? { step: 1, optedIn: false, submission: null, returnOpportunityId: null };
+      commit({ ...latest.current, intakeUi: { ...latest.current.intakeUi, [key]: { ...current, ...value } } });
+    },
+    [commit],
+  );
+
   const reset = useCallback(() => {
     clearState(getStorage());
     setNotice(null);
@@ -97,6 +106,7 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
     return {
       state,
       setAccess,
+      setIntakeUi,
       persona,
       actor: persona.actor,
       notice,
@@ -107,7 +117,7 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
       reset,
       dismissNotice,
     };
-  }, [state, notice, run, setPersona, setOnline, setFailNextSend, setAccess, reset, dismissNotice]);
+  }, [state, notice, run, setPersona, setOnline, setFailNextSend, setAccess, setIntakeUi, reset, dismissNotice]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

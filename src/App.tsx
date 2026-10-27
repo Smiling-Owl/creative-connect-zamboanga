@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { HashRouter, Link, NavLink, Outlet, Route, Routes, useLocation } from 'react-router';
+import { HashRouter, NavLink, Outlet, Route, Routes, useLocation } from 'react-router';
 import { DemoControls } from './demo/DemoControls';
 import { AccessDenied, Button, PageHeader } from './components/ui';
 import { ROLE_LABEL } from './labels';
 import { NAV, VIEWS, canOpen, type ViewDef } from './routes';
 import { DemoStoreProvider, useDemo } from './state/store';
 import { PublicView } from './views/public/PublicViews';
+import { IntakeView } from './views/intake/IntakeViews';
 
 export function App() {
   return (
@@ -80,7 +81,7 @@ function Layout() {
 }
 
 function ViewPage({ view }: { view: ViewDef }) {
-  const { actor, state } = useDemo();
+  const { actor } = useDemo();
   useEffect(() => {
     document.title = `${view.title} — Creative Connect Zamboanga (prototype)`;
   }, [view.title]);
@@ -96,9 +97,8 @@ function ViewPage({ view }: { view: ViewDef }) {
   if (view.id.startsWith('P') || view.id === 'A01' || view.id === 'A02') {
     return <><PageHeader id={view.id} title={view.title} /><PublicView id={view.id} /></>;
   }
-  if (view.id === 'R01' && state.access.returnOpportunityId) {
-    const opportunity = state.data.opportunities.find((item) => item.id === state.access.returnOpportunityId);
-    return <><PageHeader id={view.id} title={view.title} /><section className="placeholder"><p>You started registration from {opportunity?.title ?? 'an opportunity'}. This return destination stays with your demo session.</p>{opportunity ? <p><Link to={`/opportunities/${opportunity.id}`}>Return to this opportunity after intake</Link></p> : null}<p>This intake screen is scheduled for the next build step. No application has been submitted yet.</p></section></>;
+  if (view.id === 'R01' || view.id === 'R02' || view.id === 'C01') {
+    return <><PageHeader id={view.id} title={view.title} /><IntakeView id={view.id} /></>;
   }
   return (
     <>

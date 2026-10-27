@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { publicDirectory, publicProfileById, searchDirectory } from './publicProfile';
+import { projectPublicIntake, publicDirectory, publicProfileById, searchDirectory } from './publicProfile';
 import { fresh } from '../test/helpers';
 
 // Strings that must never appear in any public output: contact labels, follow-up routes, notes,
@@ -28,6 +28,29 @@ describe('public projection', () => {
 
   it('filters by an exact public skill', () => {
     expect(searchDirectory(fresh(), { skill: 'Poster layout' }).map((profile) => profile.id)).toEqual(['rec-rhea']);
+  });
+
+  it('previews only display fields and explicitly approved evidence from an intake draft', () => {
+    const fields = fresh().drafts.find((draft) => draft.id === 'draft-jun')!.fields;
+    const preview = projectPublicIntake('draft-preview', {
+      ...fields,
+      displayName: 'Preview name (demo)',
+      evidence: [
+        { id: 'ok', kind: 'sample', text: 'Public sample (fictional)', publicApproved: true },
+        { id: 'private', kind: 'sample', text: 'Private sample (fictional)', publicApproved: false },
+      ],
+    }, '2026-10-26T09:00:00.000Z');
+    expect(preview).toEqual({
+      id: 'draft-preview',
+      displayName: 'Preview name (demo)',
+      practice: fields.practice,
+      skills: fields.skills,
+      area: fields.area,
+      evidence: [{ kind: 'sample', text: 'Public sample (fictional)' }],
+      lastUpdated: '2026-10-26T09:00:00.000Z',
+    });
+    expect(JSON.stringify(preview)).not.toContain('Jun (fictional)');
+    expect(JSON.stringify(preview)).not.toContain('Private sample');
   });
 
   it('a private verified record is not reachable by id', () => {
