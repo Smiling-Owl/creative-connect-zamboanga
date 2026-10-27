@@ -6,6 +6,18 @@ Decision markers: **APPROVED** (decided by the team), **PROPOSED** (recommended;
 
 A single static, client-only single-page application. All "system" behavior — accounts, roles, the council's records, the coordinator's device queue, connectivity, review decisions, referrals — is simulated inside one in-browser demo store seeded from fictional fixtures. There is no server, database, API, or network dependency at runtime.
 
+### Feature 03 implementation notes — 2026-10-27
+
+- Public and simulated-access views live in `src/views/public/PublicViews.tsx`, selected by existing view IDs from `App.tsx`. Other feature views remain explicit placeholders.
+- `OpportunityDetail` is exported for later role views. Public creative data uses the allow-listed projection. Exact skill filtering extends the existing directory selector.
+- The demo envelope is now `schemaVersion: 2` under the existing `ccz-demo:v1` storage key. Older envelopes reset through the compatibility notice. New `access` state tracks recovery, a validated pending opportunity ID, fictional sign-up contact, and sign-up/verification stage.
+- Simulated sign-up updates the selected fictional creative's draft through `saveDraft`. Existing receipt-time duplicate detection flags a matching assisted contact when intake is eventually submitted. Drafts are not sent to the council by sign-up.
+- Opportunity origin accepts only a known public opportunity route; arbitrary return URLs are not rendered. Origin is persisted and shown at the intake placeholder. Full post-submission return remains a Feature 04 integration check.
+- `deadlinePassed` in `domain/core.ts` uses the deterministic demo date. New interest, invitations, and offers are blocked after the deadline; the deadline date itself remains valid. Closed/cancelled status takes precedence over expired-publication wording.
+- Playwright accepts `PLAYWRIGHT_PORT` (default 4173). Verification used 4187 to avoid an occupied default port; application runtime behavior is unchanged.
+
+No production backend, external requests, real authentication, or runtime dependencies were added. These notes record additive details, not authorization to collect real information.
+
 ```
 Browser
  ├─ Demo controls (outside product chrome): role/persona · connectivity · fail-next-send · reset

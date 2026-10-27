@@ -44,6 +44,8 @@ tests/e2e/                 # Playwright journeys (shell so far; journeys and acc
 
 Planned names that changed during implementation: `permissions.ts` became `policy.ts`, and `references.ts` became `core.ts`. Views are still single placeholder screens in `App.tsx` until their features land. Each feature moves its view into `src/views/<area>/`. Domain modules never import from `state/`, `components/`, or `views/`.
 
+Feature 03 update (2026-10-27): P01–P06 and A01–A02 are implemented in `src/views/public/PublicViews.tsx`; other feature views remain placeholders. `OpportunityDetail` is exported for reuse. `tests/e2e/public-access.spec.ts` covers public/access journeys, private-profile boundaries, bounded return context, recovery, accessibility, and narrow-screen rendering. Directory filtering now includes an exact skill option.
+
 ## Naming
 
 - Files: `PascalCase.tsx` for components and views, `camelCase.ts` for modules.
@@ -103,7 +105,7 @@ No telemetry or remote logging. `console` output is limited to development warni
 
 ## Performance
 
-- Keep the production bundle small (target under 200 KB gzipped JS, PROPOSED). Current: about 88 KB. No images or fonts beyond inline SVG icons.
+- Keep the production bundle small (target under 200 KB gzipped JS, PROPOSED). Current: about 96 KB. No images or fonts beyond inline SVG icons.
 - Code-split by role area only if the bundle target is exceeded.
 
 ## Accessibility
@@ -112,18 +114,18 @@ Follow `ui-context.md` → Accessibility. Every new view must pass the axe scan 
 
 ## Verification Commands
 
-Recorded from runs in the session of 2026-10-26 (Windows, Node 24.19, npm 12.0.2). Re-run before citing them again.
+Current iteration verified on 2026-10-27 (Windows). Re-run before citing these results for later code changes. Sol Senior reviewed the source; a Luna worker implemented Feature 03. The requested model name “6.1 Luna” was unavailable, so the exposed `gpt-6-luna` worker role was used and disclosed.
 
 | Command | What it checks | Last result |
 |---|---|---|
-| `npm install` | Install dependencies from the lockfile | ok (`npm ci` not yet run) |
+| `npm ci --no-audit --no-fund` | Clean install from the lockfile | exit 0; 237 packages |
 | `npm run typecheck` | `tsc --noEmit`, strict | exit 0 |
 | `npm run lint` | ESLint with typescript-eslint and react-hooks rules | exit 0 |
-| `npm test` | Vitest unit tests, single run | 116 passed |
-| `npm run build` | Typecheck, then static build to `dist/` | exit 0, about 88 KB gzipped JS |
+| `npm test` | Vitest unit tests, single run | 121 passed (14 files) |
+| `npm run build` | Typecheck, then static build to `dist/` | exit 0, including browser-suite rebuild; about 96 KB gzipped JS |
 | `npm run preview` | Serves `dist/` locally (demo fallback) | used by the e2e run |
-| `npm run test:e2e` | Playwright (Chromium), which builds and serves `dist/` | 12 passed |
+| `npm run test:e2e` | Playwright (Chromium), which builds and serves `dist/` | 17 passed with `PLAYWRIGHT_PORT=4187`; includes axe and 320 px checks |
 
-Chromium needs a one-time install: `npx playwright install chromium`. `npm run dev` starts the Vite dev server. It is not part of the verification record.
+Chromium needs a one-time install: `npx playwright install chromium`. That install and `npm run dev -- --host 127.0.0.1 --port 4175 --strictPort` were verified this iteration. Desktop/mobile screenshots and browser-exception checks were performed on public/access views. Manual screen-reader testing and full 200% zoom coverage remain unverified.
 
 Do not cite a command as passing unless its result is recorded here from a run in the current session.

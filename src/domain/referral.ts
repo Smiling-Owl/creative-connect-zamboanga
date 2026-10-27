@@ -1,5 +1,5 @@
 import { can } from './policy';
-import { cloneData, fail, findOpportunity, findRecord, findReferral, log, nextId, reasonMissing, requireReason } from './core';
+import { cloneData, deadlinePassed, fail, findOpportunity, findRecord, findReferral, log, nextId, reasonMissing, requireReason } from './core';
 import type { Ctx, DomainData, OutcomeState, Referral, ReferralState, Result } from './types';
 
 // Referral: one record per creative and opportunity. Interest and invitation never reserve a place.
@@ -49,6 +49,7 @@ export function expressInterest(data: DomainData, ctx: Ctx, input: { recordId: s
   const existing = findPair(data, record.id, opportunity.id);
   if (existing) return { ok: true, data, id: existing.id };
   if (opportunity.state !== 'published') return fail('opportunity_closed', 'This opportunity is no longer open to interest.');
+  if (deadlinePassed(opportunity.deadline, ctx.at)) return fail('deadline_passed', `The deadline was ${opportunity.deadline}.`);
   if (capacityUsed(data, opportunity.id) >= opportunity.capacity) {
     return fail('full', 'This opportunity is full. No new interest can be recorded for it.');
   }
@@ -82,6 +83,7 @@ export function inviteCreative(data: DomainData, ctx: Ctx, input: { recordId: st
   const opportunity = findOpportunity(data, input.opportunityId);
   if (!opportunity) return fail('not_found', 'That opportunity could not be found.');
   if (opportunity.state !== 'published') return fail('opportunity_closed', 'Only published opportunities can take invitations.');
+  if (deadlinePassed(opportunity.deadline, ctx.at)) return fail('deadline_passed', `The deadline was ${opportunity.deadline}.`);
   if (capacityUsed(data, opportunity.id) >= opportunity.capacity) {
     return fail('full', 'This opportunity is full. Free a place before inviting another creative.');
   }
@@ -118,7 +120,7 @@ function transitionFromCouncil(
   referralId: string,
   allowedFrom: ReferralState[],
   to: ReferralState,
-  options: { reason?: string | null; checkCapacity?: boolean; requirePublished?: boolean } = {},
+  options: { reason?: string | null; checkCapacity?: boolean; requirePublished?: boolean; checkDeadline?: boolean } = {},
 ): Result {
   if (!can(ctx.actor, 'manage_referral')) return fail('forbidden', 'Only council staff can change referrals.');
   const referral = findReferral(data, referralId);
@@ -130,6 +132,9 @@ function transitionFromCouncil(
   if ((options.requirePublished ?? true) && opportunity.state !== 'published') {
     return fail('opportunity_closed', 'This opportunity is closed or cancelled, so new offers, selections, and confirmations are not possible.');
   }
+  if (options.checkDeadline && deadlinePassed(opportunity.deadline, ctx.at)) {
+    return fail('deadline_passed', `The deadline was ${opportunity.deadline}.`);
+  }
   if (options.checkCapacity && capacityUsed(data, opportunity.id) >= opportunity.capacity) {
     return fail('full', 'All places are confirmed for this opportunity. Free a place or increase capacity first.');
   }
@@ -139,11 +144,11 @@ function transitionFromCouncil(
 }
 
 export function startReferralReview(data: DomainData, ctx: Ctx, referralId: string): Result {
-  return transitionFromCouncil(data, ctx, referralId, ['interest'], 'under_review');
+  return transitionFromCouncil(data, ctx, referralId, ['interest'], 'under_review', { checkDeadline: true });
 }
 
 export function offerReferral(data: DomainData, ctx: Ctx, referralId: string): Result {
-  return transitionFromCouncil(data, ctx, referralId, ['interest', 'under_review'], 'offered', { checkCapacity: true });
+  return transitionFromCouncil(data, ctx, referralId, ['interest', 'under_review'], 'offered', { checkCapacity: true, checkDeadline: true });
 }
 
 export function markNotSelected(data: DomainData, ctx: Ctx, input: { referralId: string; reason: string }): Result {
@@ -169,7 +174,7 @@ export function respondToOffer(
   if (referral.state !== 'offered') return fail('invalid_state', 'There is no open offer to respond to.');
   const opportunity = findOpportunity(data, referral.opportunityId)!;
   if (opportunity.state !== 'published') return fail('opportunity_closed', 'This opportunity is no longer open for responses.');
-  if (ctx.at.slice(0, 10) > opportunity.deadline) {
+  if (deadlinePassed(opportunity.deadline, ctx.at)) {
     return fail('deadline_passed', `The response deadline was ${opportunity.deadline}.`);
   }
 

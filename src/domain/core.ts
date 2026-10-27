@@ -80,3 +80,8 @@ export function findOpportunity(data: DomainData, id: string) {
 export function normalize(text: string): string {
   return text.trim().replace(/\s+/g, ' ').toLowerCase();
 }
+
+/** The published deadline date remains open through its final simulated minute. */
+export function deadlinePassed(deadline: string, at: string): boolean {
+  return at.slice(0, 10) > deadline;
+}

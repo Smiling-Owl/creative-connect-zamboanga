@@ -6,7 +6,14 @@ import type { DemoSettings, DomainData } from '../domain/types';
 // Every storage call is guarded: private windows and blocked storage must not break the prototype.
 
 export const STORAGE_KEY = 'ccz-demo:v1';
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
+
+export interface DemoAccessState {
+  recovery: 'idle' | 'code_requested' | 'expired' | 'help';
+  returnOpportunityId: string | null;
+  signupContact: string;
+  signupStatus: 'idle' | 'verification_pending' | 'verified';
+}
 
 export interface AppState {
   schemaVersion: number;
@@ -15,6 +22,7 @@ export interface AppState {
   /** Minutes since the demo origin. Advances by one for each successful action. */
   clock: number;
   data: DomainData;
+  access: DemoAccessState;
 }
 
 export function initialState(): AppState {
@@ -24,6 +32,7 @@ export function initialState(): AppState {
     settings: { online: true, failNextSend: false },
     clock: 0,
     data: baselineData(),
+    access: { recovery: 'idle', returnOpportunityId: null, signupContact: 'rhea@example.invalid', signupStatus: 'idle' },
   };
 }
 
@@ -47,7 +56,12 @@ function isAppState(value: unknown): value is AppState {
     settings !== null &&
     typeof settings.online === 'boolean' &&
     typeof settings.failNextSend === 'boolean' &&
-    isDomainData(candidate.data)
+    isDomainData(candidate.data) &&
+    typeof candidate.access === 'object' && candidate.access !== null &&
+    ['idle', 'code_requested', 'expired', 'help'].includes(String((candidate.access as Record<string, unknown>).recovery)) &&
+    ((candidate.access as Record<string, unknown>).returnOpportunityId === null || typeof (candidate.access as Record<string, unknown>).returnOpportunityId === 'string') &&
+    typeof (candidate.access as Record<string, unknown>).signupContact === 'string' &&
+    ['idle', 'verification_pending', 'verified'].includes(String((candidate.access as Record<string, unknown>).signupStatus))
   );
 }
 

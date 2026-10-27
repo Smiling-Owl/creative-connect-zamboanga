@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { publicDirectory, publicProfileById } from './publicProfile';
+import { publicDirectory, publicProfileById, searchDirectory } from './publicProfile';
 import { fresh } from '../test/helpers';
 
 // Strings that must never appear in any public output: contact labels, follow-up routes, notes,
@@ -24,6 +24,10 @@ describe('public projection', () => {
   it('the directory returns only listed records', () => {
     const names = publicDirectory(fresh()).map((p) => p.id).sort();
     expect(names).toEqual(['rec-dani', 'rec-noel', 'rec-rhea', 'rec-vina']);
+  });
+
+  it('filters by an exact public skill', () => {
+    expect(searchDirectory(fresh(), { skill: 'Poster layout' }).map((profile) => profile.id)).toEqual(['rec-rhea']);
   });
 
   it('a private verified record is not reachable by id', () => {

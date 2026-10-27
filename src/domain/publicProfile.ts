@@ -47,6 +47,7 @@ export function publicDirectory(data: DomainData): PublicProfile[] {
 export interface DirectoryFilter {
   query?: string;
   practice?: string;
+  skill?: string;
   area?: string;
 }
 
@@ -54,9 +55,11 @@ export interface DirectoryFilter {
 export function searchDirectory(data: DomainData, filter: DirectoryFilter): PublicProfile[] {
   const query = (filter.query ?? '').trim().toLowerCase();
   const practice = (filter.practice ?? '').trim().toLowerCase();
+  const skill = (filter.skill ?? '').trim().toLowerCase();
   const area = (filter.area ?? '').trim().toLowerCase();
   return publicDirectory(data).filter((profile) => {
     if (practice && profile.practice.toLowerCase() !== practice) return false;
+    if (skill && !profile.skills.some((item) => item.toLowerCase() === skill)) return false;
     if (area && profile.area.toLowerCase() !== area) return false;
     if (!query) return true;
     const haystack = [profile.displayName, profile.practice, profile.area, ...profile.skills].join(' ').toLowerCase();

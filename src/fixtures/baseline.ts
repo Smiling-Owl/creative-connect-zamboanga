@@ -61,14 +61,14 @@ function record(
   fields: IntakeFields,
   source: IntakeSource,
   app: Application,
-  options: { personId?: string | null; optedIn?: boolean; approved?: boolean } = {},
+  options: { personId?: string | null; optedIn?: boolean; approved?: boolean; inviteCode?: string | null } = {},
 ): CreativeRecord {
   const personId = options.personId ?? null;
   return {
     id,
     personId,
-    accountState: personId ? 'active' : 'none',
-    inviteCode: null,
+    accountState: personId ? 'active' : options.inviteCode ? 'invited' : 'none',
+    inviteCode: options.inviteCode ?? null,
     intake: fields,
     source,
     siteId: source.siteId,
@@ -86,6 +86,7 @@ const rhea = intake({
   practice: 'Graphic design',
   skills: ['Poster layout', 'Logo sketching'],
   area: 'Area 1 (broad, fictional)',
+  followUp: { kind: 'own_channel', channelLabel: 'rhea@example.invalid' },
 });
 
 const dani = intake({
@@ -231,7 +232,7 @@ export function baselineData(): DomainData {
       personId: 'person-rhea',
       optedIn: true,
     }),
-    record('rec-dani', dani, SOURCE_B, application('CCZ-0002', 'verified', 1), { optedIn: true }),
+    record('rec-dani', dani, SOURCE_B, application('CCZ-0002', 'verified', 1), { optedIn: true, inviteCode: 'INV-DEMO-DANI' }),
     record('rec-noel', noel, SOURCE_SELF, application('CCZ-0003', 'verified', 1), {
       personId: 'person-noel',
       optedIn: true,

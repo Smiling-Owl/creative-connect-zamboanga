@@ -42,6 +42,21 @@ describe('validateIntake', () => {
 });
 
 describe('drafts', () => {
+  it('flags a new self-service submission that reuses an assisted record contact for council review', () => {
+    const start = fresh();
+    const fields = completeFields({
+      displayName: 'New creative (demo)',
+      area: 'Area 3 (broad, fictional)',
+      followUp: { kind: 'own_channel', channelLabel: 'rhea@example.invalid' },
+    });
+    const saved = saveDraft(start, ctxFor('jun'), { draftId: 'draft-jun', recordId: null, source: SOURCE_A, fields });
+    if (!saved.ok) throw new Error(saved.message);
+    const submitted = submitIntake(saved.data, ctxFor('jun'), { draftId: saved.id!, optedIn: false });
+    if (!submitted.ok) throw new Error(submitted.message);
+    const record = submitted.data.records.find((item) => item.id === submitted.id)!;
+    expect(record.application.duplicate).toEqual({ candidateRecordId: 'rec-rhea', status: 'open', reason: null });
+  });
+
   it('saves and updates the same draft without creating another', () => {
     const start = fresh();
     const first = saveDraft(start, ctxFor('jun'), { draftId: null, recordId: null, source: { mode: 'self_service', siteId: null, coordinatorId: null, capturedOn: '2026-10-26' }, fields: completeFields() });
