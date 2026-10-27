@@ -1,6 +1,6 @@
 # Progress Tracker
 
-Last updated: 2026-10-28 (vinta theme on `feature/vinta-theme`, not yet merged).
+Last updated: 2026-10-28.
 
 ## Current Phase
 
@@ -35,6 +35,7 @@ User-directed visual revision: the team's Zamboanga vinta palette (#FE4800, #008
 - No copy, label, route, or domain changes. Markup hooks only: `.app-shell[data-area]`, the sail mark, the P01 hero sail, and `FigureText`. The council logo, lettering, and supplied artwork are not reproduced.
 - Results: typecheck/lint clean; `npm test` 180/180; e2e 81/81 (axe on every route, no overflow at 320/360/768/1280); CSS 4.80 KB gzip (+1.75 KB), JS 134.51 KB gzip (+0.49 KB); no external requests, fonts, images, or filters. All text pairs ≥ 4.5:1 and UI/focus ≥ 3:1.
 - Mobile header (non-sticky) at 320×568: 239 px guest, 214 px creative/coordinator, 258 px council.
+- Integrated: `main` fast-forwarded to `3a42535` and pushed to `origin/main` on 2026-10-28. Rerun on `main` after a clean `npm ci`: typecheck/lint clean, 180/180 unit, 81/81 e2e, build 4.80 KB CSS / 134.51 KB JS gzip, `git diff --check` clean.
 - Open: a person should confirm the band is not a trace of the supplied council pattern artwork and that the team may use the council palette. The hidden overview table headers and `:has()` layouts are verified in Chromium only.
 
 ## Feature 08 — 2026-10-28
