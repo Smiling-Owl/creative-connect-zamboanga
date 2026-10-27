@@ -4,11 +4,11 @@ Last updated: 2026-10-28.
 
 ## Current Phase
 
-The MVP (Features 01–09) is implemented and verified on branch `feature/mvp-completion` (worktree `E:/side-work/hermosa-mvp-completion`). It is **not yet integrated into `main` or pushed**; integration waits for the user's explicit go-ahead. Remaining items are human handoffs (presenter laptop, non-builder rehearsal, manual screen reader, real 200% zoom) and team decisions, not unbuilt features.
+The MVP (Features 01–09) is implemented, verified, and integrated: `main` was fast-forwarded to `feature/mvp-completion` at `e9b44e7c8db9b29e5ae6161bb4ebef4a7f2483fb` and pushed to `origin/main` on 2026-10-28 (local and remote hashes matched). Remaining items are human handoffs (presenter laptop, non-builder rehearsal, manual screen reader, real 200% zoom) and team decisions, not unbuilt features.
 
 ## Current Goal
 
-Integrate `feature/mvp-completion` into `main` (fast-forward) and push when authorized, then complete the presenter-laptop handoff in `DEMO.md`. Features 08–09 used a Claude Haiku 5.5 worker with independent Claude Sonnet 5.5 verification, as the user requested on 2026-10-28; Features 05–07 used the earlier GPT-6 Luna / GPT-6.1 Sol routing. Root (orchestrator) owns scope, integration, documentation, and final verification.
+Complete the presenter-laptop handoff in `DEMO.md` and the manual accessibility checks. Features 08–09 used a Claude Haiku 5.5 worker with independent Claude Sonnet 5.5 verification, as the user requested on 2026-10-28; Features 05–07 used the earlier GPT-6 Luna / GPT-6.1 Sol routing. Root (orchestrator) owns scope, integration, documentation, and final verification.
 
 ## Milestones
 
@@ -58,6 +58,8 @@ Production source identical to `352c9d3`; the Feature 09 commit adds tests and d
 | `npm run test:e2e` | PASS; 81 tests in 9 files (root run on port 4193; verifier ran twice, no flakes) |
 | `git diff --check` | PASS |
 | Local fallback | `npm run preview` on port 4195 served local relative assets only — development workstation evidence, NOT the presenter laptop |
+
+Integration rerun on `main` at `e9b44e7` (E:/dev-work/hermosa): `npm ci` 237 packages; typecheck and lint clean; `npm test` 180/180 (16 files); build 134.02 KB gzipped JS; `PLAYWRIGHT_PORT=4197 npm run test:e2e` 81/81; `git diff --check` clean.
 
 Not verified: manual screen-reader pass, real browser 200% zoom, non-Chromium browsers, presenter-laptop install/build/preview, non-builder teammate rehearsal, narration timing.
 
@@ -163,8 +165,7 @@ Existing history is preserved. Integration targets main in E:/dev-work/hermosa. 
 
 ## Next Recommended Action
 
-1. With the user's explicit go-ahead: fast-forward `main` in E:/dev-work/hermosa to `feature/mvp-completion`, rerun the verification commands on `main`, push `origin/main`, and compare local/remote hashes.
-2. On the presenter laptop: follow the `DEMO.md` presenter checklist (`npm ci`, `npm run build`, `npm run preview`), then have a teammate who did not build the app run both stories and fill in the handoff table.
-3. Do a manual screen-reader spot check and a real 200% zoom check, and record the results here.
+1. On the presenter laptop: follow the `DEMO.md` presenter checklist (`npm ci`, `npm run build`, `npm run preview`), then have a teammate who did not build the app run both stories and fill in the handoff table.
+2. Do a manual screen-reader spot check and a real 200% zoom check, and record the results here.
 
 Open questions: exact event date/demo duration, team ownership, judge hosting/access, approved guidance/contact routes, whether a deck/video is required, and the full-capacity invitation rule. These do not block the fictional prototype.
