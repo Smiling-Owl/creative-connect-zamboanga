@@ -39,6 +39,18 @@ interface Row {
   text: string;
 }
 
+// A leading whole number is shown as a large numeral with the rest as a small label. The text content is unchanged.
+function FigureText({ text }: { text: string }) {
+  const match = /^(\d+)([\s\S]*)$/.exec(text);
+  if (!match) return <>{text}</>;
+  return (
+    <>
+      <span className="figure-value">{match[1]}</span>{" "}
+      <span className="figure-label">{(match[2] ?? '').trimStart()}</span>
+    </>
+  );
+}
+
 function FigureTable({ caption, rows }: { caption: string; rows: Row[] }) {
   return (
     <table className="overview-table">
@@ -53,7 +65,7 @@ function FigureTable({ caption, rows }: { caption: string; rows: Row[] }) {
         {rows.map((row) => (
           <tr key={row.label}>
             <th scope="row">{row.label}</th>
-            <td>{row.text}</td>
+            <td><FigureText text={row.text} /></td>
           </tr>
         ))}
       </tbody>

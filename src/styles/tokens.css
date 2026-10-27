@@ -1,37 +1,65 @@
-/* Design tokens. Single source for colour, spacing, and shape. Light only: no OS theme dependency. */
+/* Design tokens. Single source for colour, type, spacing, and shape. Light only: no OS theme dependency.
+   Vinta palette: band, sail mark, role markers, and fills (decorative or large/UI use only).
+   Text uses the text-safe tokens. Ratios are WCAG 2.x against #F8F8F8 (page) or #FFFFFF (surface). */
 :root {
   color-scheme: light;
 
-  --color-bg: #faf8f5;
+  /* Vinta palette. Never raw orange, yellow, or blue as normal-size text on light backgrounds. */
+  --vinta-orange: #fe4800; /* 3.22:1 on page: UI and decoration only */
+  --vinta-green: #008735; /* 4.38:1 on page: decoration; text uses --color-accent */
+  --vinta-yellow: #feba00; /* 1.62:1 on page: decoration and halos; dark ink on it is 7.95:1 */
+  --vinta-blue: #007ed5; /* 4.00:1 on page: decoration and UI; text uses --color-link */
+  --vinta-dark: #2b2e32;
+  --vinta-offwhite: #f8f8f8;
+
+  /* Neutrals and surfaces. */
+  --color-bg: #f8f8f8;
   --color-surface: #ffffff;
-  --color-ink: #1f2328;
-  --color-ink-muted: #565e67;
-  --color-border: #8a939c;
-  --color-divider: #d9dde2;
-  --color-accent: #0f5c6e;
+  --color-ink: #2b2e32; /* 12.84:1 on page */
+  --color-ink-muted: #565b62; /* 6.44:1 on page, 6.84:1 on surface */
+  --color-border: #8a9099; /* inputs and UI boundaries: 3.03:1 on page, 3.22:1 on surface */
+  --color-divider: #dcdfe3; /* decorative card edges and rules */
+  --color-hover: #eef0f2; /* 11.94:1 with ink */
+
+  /* Interactive colour. */
+  --color-accent: #008434; /* text-safe green; white text 4.83:1 */
+  --color-accent-hover: #006d2b; /* white text 6.52:1 */
   --color-accent-ink: #ffffff;
-  --color-focus: #b4530a;
-  --color-demo: #5a4bb0;
+  --color-link: #0067b1; /* 5.53:1 on page */
+  --color-focus: #2b2e32; /* 3 px focus outline: 12.84:1 on page */
+  --color-focus-halo: var(--vinta-yellow); /* outer halo beside the dark outline */
+  --color-demo: #5a4bb0; /* demo controls only: dashed outline, distinct from the palette; 6.44:1 on page */
 
-  --tone-info-bg: #e6f0fb;
-  --tone-info-ink: #1c4f8a;
-  --tone-success-bg: #e7f4ea;
-  --tone-success-ink: #1e6b34;
-  --tone-warning-bg: #fdf1dc;
-  --tone-warning-ink: #7a4a00;
-  --tone-danger-bg: #fbe7e7;
-  --tone-danger-ink: #8a1f1f;
-  --tone-neutral-bg: #eceef1;
-  --tone-neutral-ink: #3d4550;
+  /* Role-area markers. Public = blue, creative = orange, coordinator = green, council = yellow. */
+  --area-public: var(--vinta-blue);
+  --area-creative: var(--vinta-orange);
+  --area-coordinator: var(--vinta-green);
+  --area-council: var(--vinta-yellow);
 
-  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+  /* Status tones: ink on tinted background. Status wording lives in src/labels.ts. */
+  --tone-info-bg: #e6f2fb;
+  --tone-info-ink: #0067b1; /* 5.16:1 */
+  --tone-success-bg: #e6f3eb;
+  --tone-success-ink: #006b2a; /* 5.86:1 */
+  --tone-warning-bg: #fff4d6;
+  --tone-warning-ink: #5c4400; /* 8.40:1 */
+  --tone-danger-bg: #ffede5;
+  --tone-danger-ink: #b83400; /* 5.24:1 */
+  --tone-neutral-bg: #e9ebee;
+  --tone-neutral-ink: #2b2e32; /* 11.42:1 */
 
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.375rem;
-  --text-2xl: 1.75rem;
+  /* Typography. System stack only: no web-font download. */
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif;
+  --text-sm: 0.9375rem; /* secondary text, 15 px */
+  --text-base: 1.0625rem; /* body, 17 px */
+  --text-lg: 1.1875rem; /* sub-section heading, 19 px */
+  --text-xl: 1.5rem; /* section heading, 24 px */
+  --text-2xl: clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem); /* page title */
+  --text-figure: 2rem; /* council figures */
+  --leading-body: 1.55;
+  --tracking-heading: -0.01em;
 
+  /* Spacing: 4 px base. */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -39,8 +67,13 @@
   --space-5: 1.5rem;
   --space-6: 2rem;
   --space-7: 3rem;
+  --space-8: 4.5rem;
 
-  --radius: 6px;
+  /* Shape. */
+  --radius: 8px;
+  --radius-lg: 16px;
   --tap-min: 44px;
   --content-max: 42rem;
+  --band-header: 10px;
+  --band-footer: 6px;
 }

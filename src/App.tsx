@@ -57,15 +57,24 @@ function Layout() {
     document.querySelector<HTMLHeadingElement>('main h1')?.focus();
   }, [location.pathname, location.search]);
 
+  const area = actor.role === 'guest' ? 'public' : actor.role;
   return (
-    <>
+    <div className="app-shell" data-area={area}>
       <a className="skip-link" href="#main">
         Skip to main content
       </a>
       <DemoControls />
       <header className="site-header">
         <div className="wordmark">
-          <a href="#/">Creative Connect Zamboanga</a>
+          <a href="#/">
+            <svg className="sail-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+              <path className="sail-orange" d="M0 0H16V16Z" />
+              <path className="sail-green" d="M32 0V16L16 0Z" />
+              <path className="sail-yellow" d="M32 32H16V16Z" />
+              <path className="sail-blue" d="M0 32V16L16 32Z" />
+            </svg>
+            Creative Connect Zamboanga
+          </a>
           <span>Proposed service concept for the Zamboanga City Creative Council — not an official council site</span>
           <span className="prototype-marker">Prototype · fictional data</span>
         </div>
@@ -109,7 +118,7 @@ function Layout() {
       <footer className="site-footer">
         Prototype with fictional data. No real credentials, messages, or personal records are processed.
       </footer>
-    </>
+    </div>
   );
 }
 

@@ -1,4 +1,4 @@
-/* Base styles. Mobile first. No horizontal scroll at 320px. */
+/* Base styles. Mobile first. No horizontal scroll at 320px. Flat surfaces, no blur or filters, CSS-only decoration. */
 *,
 *::before,
 *::after {
@@ -16,7 +16,7 @@ body {
   color: var(--color-ink);
   font-family: var(--font-body);
   font-size: var(--text-base);
-  line-height: 1.5;
+  line-height: var(--leading-body);
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -24,9 +24,14 @@ body {
 h1,
 h2,
 h3 {
-  line-height: 1.25;
-  font-weight: 600;
+  line-height: 1.2;
+  font-weight: 700;
   margin: 0 0 var(--space-3);
+}
+
+h1,
+h2 {
+  letter-spacing: var(--tracking-heading);
 }
 
 h1 {
@@ -37,22 +42,31 @@ h2 {
   font-size: var(--text-xl);
 }
 
+h3 {
+  font-size: var(--text-lg);
+}
+
 p {
   margin: 0 0 var(--space-3);
 }
 
 a {
-  color: var(--color-accent);
-  text-underline-offset: 0.15em;
+  color: var(--color-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
+/* Focus: 3px dark outline with a 3px offset, plus a yellow halo outside it. */
 :focus-visible {
   outline: 3px solid var(--color-focus);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 8px var(--color-focus-halo);
 }
 
 [tabindex='-1']:focus {
   outline: none;
+  box-shadow: none;
 }
 
 .sr-only {
@@ -72,6 +86,7 @@ a {
   left: var(--space-3);
   top: -100px;
   background: var(--color-surface);
+  color: var(--color-ink);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius);
   z-index: 10;
@@ -81,23 +96,41 @@ a {
   top: var(--space-2);
 }
 
-/* Demo controls: visibly separate from the product. */
+/* Demo controls: collapsed to one right-aligned dashed pill (44px); expanded it opens as a dashed panel. Never the vinta palette. */
 .demo-bar {
-  border: 2px dashed var(--color-demo);
-  border-radius: var(--radius);
-  margin: var(--space-3) var(--space-4) 0;
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-surface);
+  display: flex;
+  justify-content: flex-end;
+  margin: var(--space-2) var(--space-4) var(--space-2);
   font-size: var(--text-sm);
 }
 
 .demo-bar summary {
   cursor: pointer;
-  min-height: var(--tap-min);
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  min-height: var(--tap-min);
+  padding: var(--space-1) var(--space-3);
+  border: 2px dashed var(--color-demo);
+  border-radius: 999px;
+  background: var(--color-surface);
   color: var(--color-demo);
+  font-size: 0.875rem;
   font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.demo-bar > details[open] {
+  flex: 1 1 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 2px dashed var(--color-demo);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.demo-bar > details[open] > summary {
+  padding: 0;
+  border: 0;
 }
 
 .demo-grid {
@@ -111,55 +144,234 @@ a {
   margin: var(--space-2) 0 0;
 }
 
+/* App chrome. The role area sets --area: blue public, orange creative, green coordinator, yellow council. */
+.app-shell {
+  --area: var(--area-public);
+}
+
+.app-shell[data-area='creative'] {
+  --area: var(--area-creative);
+}
+
+.app-shell[data-area='coordinator'] {
+  --area: var(--area-coordinator);
+}
+
+.app-shell[data-area='council'] {
+  --area: var(--area-council);
+}
+
+/* Header: one white bar with a 1px divider. Mobile: brand, one muted line (subtitle and marker wrap together), the nav
+   as text links, then the persona line. From 900px the brand, marker and persona share the top row; the nav takes its own
+   full row until 1150px, where it moves to the right of the top row. Top padding clears the 8-10px band. */
 .site-header {
-  padding: var(--space-4);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "brand" "nav" "persona";
+  gap: 2px 0;
+  padding: calc(var(--band-header) + var(--space-1)) var(--space-4) var(--space-2);
   border-bottom: 1px solid var(--color-divider);
   background: var(--color-surface);
 }
 
-.wordmark a {
+.wordmark {
+  grid-area: brand;
+  min-width: 0;
+}
+
+.wordmark > a {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: var(--space-2);
   font-weight: 700;
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   color: var(--color-ink);
   text-decoration: none;
 }
 
-.wordmark span {
-  display: block;
-  font-size: var(--text-sm);
+.wordmark > span:not(.prototype-marker) {
+  display: inline;
+  font-size: 0.875rem;
+  line-height: 1.35;
   color: var(--color-ink-muted);
+}
+
+/* Original sail mark (four corner triangles in App.tsx). Decorative: the wordmark text carries the name. */
+.sail-mark {
+  width: 1.5em;
+  height: 1.5em;
+  flex: none;
+}
+
+.sail-orange { fill: var(--vinta-orange); }
+.sail-green { fill: var(--vinta-green); }
+.sail-yellow { fill: var(--vinta-yellow); }
+.sail-blue { fill: var(--vinta-blue); }
+
+.prototype-marker {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  border: 1px dashed var(--color-demo);
+  border-radius: var(--radius);
+  color: var(--color-demo);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.site-header > nav {
+  grid-area: nav;
+  min-width: 0;
 }
 
 .nav-list {
   list-style: none;
-  margin: var(--space-3) 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 0;
 }
 
+/* Text links, not boxes. The 44px tap height is kept. The active destination gets a 4px area-colour underline bar
+   (with a 1px ink edge, so its shape is at least 3:1 even in yellow) and bold ink text. */
 .nav-link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-height: var(--tap-min);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius);
+  padding: 0 var(--space-1);
   color: var(--color-ink);
   text-decoration: none;
-  border: 1px solid var(--color-divider);
+  font-size: 0.9375rem;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
 }
 
 .nav-link.is-active {
-  background: var(--color-accent);
-  color: var(--color-accent-ink);
-  border-color: var(--color-accent);
+  font-weight: 700;
+}
+
+.nav-link.is-active::after {
+  content: "";
+  position: absolute;
+  left: var(--space-1);
+  right: var(--space-1);
+  bottom: 6px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--area);
+  box-shadow: 0 0 0 1px var(--color-ink);
 }
 
 .persona {
-  margin: var(--space-3) 0 0;
+  grid-area: persona;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: var(--color-ink-muted);
+}
+
+@media (min-width: 900px) {
+  .site-header {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "brand marker . persona" "sub sub sub sub" "nav nav nav nav";
+    align-items: center;
+    column-gap: var(--space-4);
+    row-gap: var(--space-1);
+    padding: calc(var(--band-header) + var(--space-2)) var(--space-5) var(--space-3);
+  }
+
+  .wordmark {
+    display: contents;
+  }
+
+  .wordmark > a {
+    grid-area: brand;
+    display: inline-flex;
+    width: auto;
+    justify-self: start;
+  }
+
+  .wordmark > span:not(.prototype-marker) {
+    grid-area: sub;
+    display: block;
+  }
+
+  .prototype-marker {
+    grid-area: marker;
+    justify-self: start;
+    margin-left: 0;
+  }
+
+  .site-header > nav {
+    justify-self: start;
+  }
+
+  .persona {
+    justify-self: end;
+  }
+
+  .nav-link {
+    padding: 0 var(--space-2);
+  }
+}
+
+@media (min-width: 1150px) {
+  .site-header {
+    grid-template-areas: "brand marker . nav" "sub sub . persona";
+  }
+
+  .site-header > nav {
+    justify-self: end;
+  }
+}
+
+/* Vinta bands: sails as hard-stop diagonal triangles in large 96px segments (inline SVG, no request).
+   Absolutely placed at the page edge so they never sit behind text. */
+.site-header,
+.site-footer {
+  position: relative;
+}
+
+.site-header::before,
+.site-footer::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--band-header);
+  background: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 576 10%27 preserveAspectRatio=%27none%27%3E%3Cpath fill=%27%23FE4800%27 d=%27M0 0L96 10L0 10Z%27/%3E%3Cpath fill=%27%23008735%27 d=%27M0 0H96V10Z%27/%3E%3Cpath fill=%27%23FEBA00%27 d=%27M96 0L192 10L96 10Z%27/%3E%3Cpath fill=%27%23007ED5%27 d=%27M96 0H192V10Z%27/%3E%3Cpath fill=%27%23008735%27 d=%27M192 0L288 10L192 10Z%27/%3E%3Cpath fill=%27%23FEBA00%27 d=%27M192 0H288V10Z%27/%3E%3Cpath fill=%27%23007ED5%27 d=%27M288 0L384 10L288 10Z%27/%3E%3Cpath fill=%27%23FE4800%27 d=%27M288 0H384V10Z%27/%3E%3Cpath fill=%27%23FE4800%27 d=%27M384 0L480 10L384 10Z%27/%3E%3Cpath fill=%27%23FEBA00%27 d=%27M384 0H480V10Z%27/%3E%3Cpath fill=%27%23008735%27 d=%27M480 0L576 10L480 10Z%27/%3E%3Cpath fill=%27%23007ED5%27 d=%27M480 0H576V10Z%27/%3E%3C/svg%3E") 0 0 / 576px 100% repeat-x;
+}
+
+.site-footer::after {
+  top: auto;
+  bottom: 0;
+  height: var(--band-footer);
+  background-position: 48px 0;
+}
+
+@media (max-width: 639px) {
+  .site-header::before {
+    height: 8px;
+  }
+}
+
+.site-footer {
+  padding: var(--space-4) var(--space-4) calc(var(--space-4) + var(--band-footer));
   font-size: var(--text-sm);
   color: var(--color-ink-muted);
+  text-align: center;
+  border-top: 1px solid var(--color-divider);
 }
 
 main {
@@ -168,23 +380,30 @@ main {
   padding: var(--space-5) var(--space-4) var(--space-7);
 }
 
-.site-footer {
-  padding: var(--space-4);
-  font-size: var(--text-sm);
-  color: var(--color-ink-muted);
-  text-align: center;
-  border-top: 1px solid var(--color-divider);
-}
-
 .page-header {
   margin-bottom: var(--space-5);
 }
 
+/* Screen ID: a tiny muted uppercase label with letter spacing. */
 .view-id {
+  margin: 0 0 var(--space-2);
   font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--color-ink-muted);
-  margin: 0 0 var(--space-1);
   font-variant-numeric: tabular-nums;
+}
+
+/* Role-area marker: a small sail (right triangle with a vertical mast edge) in the area colour, on the cap height. */
+.page-header h1::before {
+  content: '';
+  display: inline-block;
+  width: 0.55em;
+  height: 0.7em;
+  margin-right: 0.4em;
+  background: var(--area);
+  clip-path: polygon(0 0, 0 100%, 100% 100%);
 }
 
 .lead {
@@ -194,13 +413,13 @@ main {
 .placeholder {
   background: var(--color-surface);
   border: 1px solid var(--color-divider);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   padding: var(--space-4);
 }
 
 .coordinator-stack { display: grid; gap: var(--space-4); }
 .coordinator-summary, .coordinator-section-heading, .queue-title, .record-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.coordinator-summary { flex-wrap: wrap; background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius); padding: var(--space-3); }
+.coordinator-summary { flex-wrap: wrap; background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-3); }
 .coordinator-summary p, .coordinator-section-heading p { margin: 0; }
 .coordinator-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 .coordinator-search { display: flex; align-items: end; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-3); }
@@ -212,15 +431,15 @@ main {
 .record-list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: var(--space-3); }
 .record-list li { min-width: 0; border-top: 1px solid var(--color-divider); padding-top: var(--space-3); overflow-wrap: anywhere; }
 .comparison-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
-.comparison-grid > div { min-width: 0; border: 1px solid var(--color-divider); border-radius: var(--radius); padding: var(--space-3); overflow-wrap: anywhere; }
+.comparison-grid > div { min-width: 0; border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-3); overflow-wrap: anywhere; }
 .comparison-grid h3 { margin-top: 0; }
-.queue-item { border: 1px solid var(--color-divider); border-radius: var(--radius); padding: var(--space-3); min-width: 0; }
+.queue-item { border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-3); min-width: 0; }
 .queue-item h3, .queue-item p { margin-top: 0; }
 .queue-meta { display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-3); }
 .queue-meta div { min-width: 0; }
 .queue-meta dt { font-weight: 600; }
 .queue-meta dd { margin: 0; overflow-wrap: anywhere; }
-.conflict-diff { border: 1px solid var(--color-divider); border-radius: var(--radius); padding: var(--space-3); margin: var(--space-3) 0; }
+.conflict-diff { border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-3); margin: var(--space-3) 0; }
 .conflict-row { display: grid; grid-template-columns: minmax(7rem, .6fr) repeat(2, minmax(0, 1fr)); gap: var(--space-3); border-top: 1px solid var(--color-divider); padding: var(--space-2) 0; }
 .conflict-row p { margin: var(--space-1) 0 0; overflow-wrap: anywhere; }
 .conflict-row span { font-size: var(--text-sm); color: var(--color-ink-muted); }
@@ -238,35 +457,49 @@ main {
   .queue-meta { grid-template-columns: 1fr; }
 }
 
-/* Buttons: 44px minimum touch target. */
+/* Buttons: pill shape, 44px minimum. Primary is the green accent with white text; secondary has a 2px dark outline. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: var(--tap-min);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius);
-  border: 1px solid transparent;
+  padding: var(--space-2) var(--space-5);
+  border-radius: 999px;
+  border: 2px solid transparent;
   font: inherit;
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
   text-align: center;
 }
 
+/* Disabled: a neutral fill and muted ink, not opacity, so the text stays legible and is not mistaken for an active control. */
 .btn:disabled {
-  opacity: 0.55;
+  background: var(--color-hover);
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
   cursor: not-allowed;
 }
 
 .btn-primary {
   background: var(--color-accent);
+  border-color: var(--color-accent);
   color: var(--color-accent-ink);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
 }
 
 .btn-secondary {
   background: var(--color-surface);
   color: var(--color-ink);
-  border-color: var(--color-border);
+  border-color: var(--color-ink);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-hover);
 }
 
 .btn-secondary[aria-pressed='true'] {
@@ -277,12 +510,14 @@ main {
 
 .btn-quiet {
   background: transparent;
-  color: var(--color-accent);
+  color: var(--color-link);
   text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .btn-danger {
   background: var(--tone-danger-ink);
+  border-color: var(--tone-danger-ink);
   color: #ffffff;
 }
 
@@ -306,13 +541,14 @@ textarea {
   gap: var(--space-1);
 }
 
-/* Status and notices. Colour is never the only signal: each badge carries text. */
+/* Status and notices. Colour is never the only signal: each badge carries text. Badges are pills. */
 .badge {
   display: inline-block;
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-1) var(--space-3);
   border-radius: 999px;
   font-size: var(--text-sm);
   font-weight: 600;
+  line-height: 1.4;
 }
 
 .badge-info,
@@ -346,7 +582,7 @@ textarea {
 }
 
 .notice {
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
 }
@@ -384,7 +620,7 @@ textarea {
 
 .dialog {
   background: var(--color-surface);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   padding: var(--space-5);
   max-width: 28rem;
   width: 100%;
@@ -395,6 +631,16 @@ textarea {
   flex-wrap: wrap;
   gap: var(--space-2);
   justify-content: flex-end;
+}
+
+/* Hover colour transitions only, 120 ms, and only when the user has not asked for reduced motion. The transition is set on
+   the hover state alone, so route and state changes stay instant. */
+@media (prefers-reduced-motion: no-preference) {
+  .btn:hover,
+  .nav-link:hover,
+  .step-button:hover {
+    transition: background-color 120ms ease-out, color 120ms ease-out, border-color 120ms ease-out;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -409,16 +655,24 @@ textarea {
     padding-left: var(--space-5);
     padding-right: var(--space-5);
   }
+
+  .public-stack {
+    gap: var(--space-7);
+  }
 }
 
-.prototype-marker {
-  display: inline-block;
-  margin-top: var(--space-1);
-  padding: 0 var(--space-2);
-  border: 1px dashed var(--color-demo);
-  border-radius: var(--radius);
-  color: var(--color-demo);
-  font-weight: 600;
+@media (min-width: 960px) {
+  main {
+    max-width: 56rem;
+  }
+
+  .public-grid:has(> :nth-child(3):last-child) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.app-shell[data-area='council'] main {
+  max-width: 72rem;
 }
 
 .public-stack,
@@ -428,29 +682,77 @@ textarea {
   min-width: 0;
 }
 
+/* Section gaps: 32 px on mobile, 48 px on desktop. */
+.public-stack {
+  gap: var(--space-6);
+}
+
 .card-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.public-card,
-.welcome-panel {
+.public-card {
   min-width: 0;
   padding: var(--space-4);
   background: var(--color-surface);
   border: 1px solid var(--color-divider);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
 }
 
+/* Hero: no card. Large display heading, a muted supporting sentence, the two buttons. A sail composition sits on the right from 1024px. */
 .welcome-panel {
-  border-top: 4px solid var(--color-accent);
-  padding: var(--space-5);
+  min-width: 0;
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4) 0 0;
 }
 
 .welcome-panel h2 {
-  max-width: 22ch;
-  font-size: clamp(1.5rem, 6vw, 2.25rem);
+  max-width: 19ch;
+  font-size: clamp(2.25rem, 1.5rem + 3.2vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.welcome-panel > p:not(.eyebrow) {
+  max-width: 36rem;
+  font-size: 1.1875rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+.welcome-panel .action-row {
+  margin-bottom: 0;
+}
+
+.hero-sail {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .welcome-panel {
+    grid-template-columns: minmax(0, 1fr) 200px;
+    column-gap: var(--space-6);
+    align-items: center;
+  }
+
+  .hero-sail {
+    display: block;
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    width: 200px;
+    height: 200px;
+  }
+}
+
+.page-header:has(+ .public-stack > .welcome-panel) h1 {
+  font-size: var(--text-xl);
+}
+
+.welcome-panel .eyebrow {
+  margin-bottom: var(--space-3);
 }
 
 .eyebrow {
@@ -460,9 +762,38 @@ textarea {
   font-weight: 600;
 }
 
+/* Option and guidance cards. Each card has a small sail notch in a corner, the only colour on the card. */
 .public-grid {
   display: grid;
   gap: var(--space-3);
+}
+
+.public-grid > .public-card {
+  position: relative;
+  --notch: var(--vinta-blue);
+}
+
+.public-grid > .public-card:nth-child(4n + 2) {
+  --notch: var(--vinta-orange);
+}
+
+.public-grid > .public-card:nth-child(4n + 3) {
+  --notch: var(--vinta-green);
+}
+
+.public-grid > .public-card:nth-child(4n + 4) {
+  --notch: var(--vinta-yellow);
+}
+
+.public-grid > .public-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  background: var(--notch);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
 
 .action-row,
@@ -527,10 +858,16 @@ textarea {
   border: 0;
   padding: var(--space-2);
   background: transparent;
-  color: var(--color-accent);
+  color: var(--color-link);
   font: inherit;
   text-decoration: underline;
   cursor: pointer;
+}
+
+/* Prose inside cards reads at about 65 characters. Tables and form controls are not affected. */
+.public-card > p,
+.public-card li {
+  max-inline-size: 65ch;
 }
 
 .public-card h2,
@@ -579,7 +916,8 @@ textarea {
 }
 
 .step-button.is-current {
-  border-color: var(--color-accent);
+  border-color: var(--color-ink);
+  box-shadow: inset 0 0 0 1px var(--color-ink);
   background: var(--tone-info-bg);
   color: var(--color-ink);
   font-weight: 600;
@@ -611,10 +949,6 @@ textarea {
 }
 
 @media (min-width: 640px) {
-  .public-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .detail-list {
     grid-template-columns: minmax(8rem, 0.35fr) minmax(0, 1fr);
     gap: var(--space-2) var(--space-3);
@@ -631,9 +965,30 @@ textarea {
   .compact-readback dd {
     margin-bottom: var(--space-2);
   }
+
+  /* Card grids: two columns from 640px; exactly three cards stay single-column here (no orphan), three across from 960px. */
+  .public-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
 }
 
-/* Council overview (Feature 08). Tables wrap text; no horizontal scroll at 320px. */
+/* Exactly three cards stay single-column between 640 and 767px (no orphan), and go three across from 768px. */
+@media (min-width: 640px) and (max-width: 767.98px) {
+  .public-grid:has(> :nth-child(3):last-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .public-grid:has(> :nth-child(3):last-child) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+
+/* Council overview (Feature 08). Tables wrap text; no horizontal scroll at 320px. Each figure leads with a large numeral
+   on its own line and states its denominator and window beneath it. */
 .synthetic-label {
   margin: 0;
   padding: var(--space-2) var(--space-3);
@@ -647,13 +1002,15 @@ textarea {
 
 .overview-grid {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-5);
   grid-template-columns: minmax(0, 1fr);
-  margin-top: var(--space-4);
+  margin-top: var(--space-5);
 }
 
 .overview-block {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .overview-block h3 {
@@ -683,15 +1040,51 @@ textarea {
   overflow-wrap: break-word;
 }
 
+.overview-table th[scope='row'] {
+  width: 40%;
+}
+
+/* The header rows repeat per block. Visually hidden, still exposed to assistive technology (sr-only technique). */
+/* Visually hidden but still table cells, so table semantics survive in every engine. */
 .overview-table thead th {
-  font-weight: 600;
+  height: 0;
+  padding: 0;
+  border: 0;
+  font-size: 0;
+  line-height: 0;
+  overflow: hidden;
+}
+
+/* Inline-block so each part takes its own line while innerText keeps the "N of M" text on one reading line. */
+.figure-value {
+  display: inline-block;
+  width: 100%;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.figure-label {
+  display: inline-block;
+  width: 100%;
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
 }
 
 .device-count {
   color: var(--color-ink-muted);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 640px) {
+  .figure-value {
+    font-size: var(--text-figure);
+  }
+}
+
+@media (min-width: 1024px) {
   .overview-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

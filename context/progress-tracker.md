@@ -1,6 +1,6 @@
 # Progress Tracker
 
-Last updated: 2026-10-28.
+Last updated: 2026-10-28 (vinta theme on `feature/vinta-theme`, not yet merged).
 
 ## Current Phase
 
@@ -26,6 +26,16 @@ Complete the presenter-laptop handoff in `DEMO.md` and the manual accessibility 
 | 09 | Full-journey verification/demo packaging | DONE (branch), human handoffs open | Tests/README/DEMO.md in the Feature 09 commit; no production changes. Presenter-laptop and non-builder rehearsal pending. |
 
 Dependency order: 01 -> 02 -> {03, 04, 07} -> {05, 06} -> 08 -> 09.
+
+## Vinta theme — 2026-10-28
+
+User-directed visual revision: the team's Zamboanga vinta palette (#FE4800, #008735, #FEBA00, #007ED5, #2B2E32, #F8F8F8) with a modern, low-bandwidth look drawn from Apple, GOV.UK, Linear, and Stripe principles. Branch `feature/vinta-theme` (worktree `E:/side-work/hermosa-vinta-theme`). Design direction is in `ui-context.md` (Visual Direction, Vinta signature, Typography, Design Tokens).
+
+- Haiku 5.5 researched the reference sites and built the theme in three passes; Sonnet 5.5 verified twice (CHANGES REQUIRED, then APPROVE). Root reviewed the screenshots after each pass and applied the final minors (table-safe hidden overview headers, three cards across from 768 px, spec wording).
+- No copy, label, route, or domain changes. Markup hooks only: `.app-shell[data-area]`, the sail mark, the P01 hero sail, and `FigureText`. The council logo, lettering, and supplied artwork are not reproduced.
+- Results: typecheck/lint clean; `npm test` 180/180; e2e 81/81 (axe on every route, no overflow at 320/360/768/1280); CSS 4.80 KB gzip (+1.75 KB), JS 134.51 KB gzip (+0.49 KB); no external requests, fonts, images, or filters. All text pairs ≥ 4.5:1 and UI/focus ≥ 3:1.
+- Mobile header (non-sticky) at 320×568: 239 px guest, 214 px creative/coordinator, 258 px council.
+- Open: a person should confirm the band is not a trace of the supplied council pattern artwork and that the team may use the council palette. The hidden overview table headers and `:has()` layouts are verified in Chromium only.
 
 ## Feature 08 — 2026-10-28
 
