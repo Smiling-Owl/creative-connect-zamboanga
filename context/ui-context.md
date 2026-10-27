@@ -12,6 +12,12 @@ A calm, trustworthy public service that helps people, not a marketing site or a 
 - Warm off-white surfaces, dark ink text, one restrained accent for primary actions and links, and a separate semantic status palette. No hero imagery, stock photos, illustrations, or decorative gradients; work evidence is represented by text cards and simple placeholder tiles labeled "Sample (fictional)".
 - No cultural motifs or invented local terminology.
 
+## Creative classification and location labels
+
+- R01 step 2 uses **Creative domain** (one of the nine RA 11904 domains) followed by **Specific creative practice** (free text, such as video editing). Domain examples help users choose; they are illustrative, not an approved sub-sector list.
+- Carry domain and practice separately through saved drafts, review, the public preview, and listed profiles. Directory domain filters use the public projection only.
+- Replace the visible label **Broad area** with **General location**. Explain: "Your barangay, district, or general area. Do not enter a street address." The current Area 1/2/3 options remain fictional demo values. Internal field name `area` is unchanged.
+
 ## Layout Principles
 
 - Mobile-first single column (max content width ~42rem for forms/reading).
@@ -39,14 +45,14 @@ APPROVED destinations per role (from the flow baseline):
 | ID | View | Users | Main contents / actions |
 |---|---|---|---|
 | P01 | Welcome and program explanation | Everyone | Who it is for, benefits, limits (not a permit, not certification, no guaranteed work), how joining works, register, ask for assistance, entry to directory/opportunities |
-| P02 | Creative directory | Everyone | Search; filter by skill/practice and broad area; only listed profiles; no-results and clear-filters states |
-| P03 | Public creative profile | Everyone | Display name, practice, skills, broad area, creator-approved evidence, last updated, "Ask the council about this creative" route; never contact details |
+| P02 | Creative directory | Everyone | Search; filter by creative domain, skill/practice, and general location; only listed profiles; no-results and clear-filters states |
+| P03 | Public creative profile | Everyone | Display name, domain, specific practice, skills, general location, creator-approved evidence, last updated, "Ask the council about this creative" route; never contact details |
 | P04 | Opportunities | Everyone | Published offers (closed/cancelled marked) with type, availability, deadline, eligibility summary; filters |
 | P05 | Opportunity details | Everyone | Provider, eligibility, cost, capacity/availability, dates, location/mode, status, next step; role-aware action (register/get assistance, express interest, already-interested status, unavailable reason) |
 | P06 | Support and guidance | Everyone | Example formalization/IP/support cards with source and last-reviewed date; "not legal advice, not a permit, not certification" |
 | A01 | Account access and invitation claim | Everyone / invited staff | Variants: sign-in, sign-up, contact verification (simulated code), claim existing record, staff invitation acceptance; simulation notice |
 | A02 | Access recovery | Account holders | Recovery via verified route (simulated), expired-link state, help via coordinator/council |
-| R01 | Creative intake | Creative / coordinator | Basic details and follow-up arrangement; practice, skills, interests, broad area, evidence (link, sample description, or assisted description); assisted mode adds source/site/coordinator; save draft; step progress |
+| R01 | Creative intake | Creative / coordinator | Basic details and follow-up arrangement; domain, free-text specific practice, skills, interests, general location, evidence (link, sample description, or assisted description); assisted mode adds source/site/coordinator; save draft; step progress |
 | R02 | Review, privacy choices, submit | Creative / coordinator | Readback with edit links, information-use notice, separate public-listing choice (off by default) with public preview, submit; online result (received + reference) or queued result (local reference, "not received yet") |
 | C01 | My home and application status | Creative | Next action card, status + timeline, reference, review reason, correct/resubmit, request human review, get assistance, notifications |
 | C02 | My profile and preferences | Creative | Edit fields (marking which need re-review), public preview (same as P03), listing on/off, contact preference, last updated/refresh prompt, correction/withdrawal request |

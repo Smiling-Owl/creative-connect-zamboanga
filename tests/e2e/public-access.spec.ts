@@ -22,6 +22,18 @@ test('public discovery hides private records and provides a council route', asyn
   await expect(page.getByRole('heading', { name: 'This profile is not publicly listed' })).toBeVisible();
 });
 
+test('directory filters by the public domain and retains the specific-practice filter', async ({ page }) => {
+  await page.goto('./#/directory');
+  await page.getByLabel('Creative domain').selectOption('Visual Arts');
+  await expect(page.getByText('1 creative listed')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Dani Ocampo (demo)' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Rhea Dimaano (demo)' })).toHaveCount(0);
+  await page.getByLabel('Specific practice').selectOption('Visual arts');
+  await expect(page.getByText('1 creative listed')).toBeVisible();
+  await page.getByLabel('Specific practice').selectOption('Graphic design');
+  await expect(page.getByText('No listed creatives match')).toBeVisible();
+});
+
 test('opportunity registration and assistance both retain their return destination', async ({ page }) => {
   await page.goto('./#/opportunities/opp-clinic');
   await page.getByRole('link', { name: 'Register to take part' }).click();

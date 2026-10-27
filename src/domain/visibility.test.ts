@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { approvePublicContent, listingStatus, setListing } from './visibility';
+import { approvePublicContent, listingStatus, publicFingerprint, setListing } from './visibility';
 import { approveApplication, editProfile, startReview } from './application';
+import { publicDirectory } from './publicProfile';
 import { ctxFor, fresh } from '../test/helpers';
 import type { CreativeRecord, DomainData } from './types';
 
@@ -64,6 +65,19 @@ describe('public listing rules', () => {
     const changed = editProfile(data, ctxFor('noel'), { recordId: 'rec-noel', fields: { ...current.intake, practice: 'Animation' } });
     if (!changed.ok) throw new Error(changed.message);
     expect(listingStatus(rec(changed.data, 'rec-noel'))).toBe('pending_review');
+  });
+
+  it('changing the creative domain waits for public-content approval', () => {
+    const data = fresh();
+    const current = rec(data, 'rec-noel');
+    const fields = { ...current.intake, domain: 'Performing Arts' } as typeof current.intake;
+    const changed = editProfile(data, ctxFor('noel'), { recordId: 'rec-noel', fields });
+    if (!changed.ok) throw new Error(changed.message);
+    const record = rec(changed.data, 'rec-noel');
+    expect(publicFingerprint(record.intake)).not.toBe(publicFingerprint(current.intake));
+    expect(record.application.updatePending).toBe(true);
+    expect(listingStatus(record)).toBe('pending_review');
+    expect(publicDirectory(changed.data).some((profile) => profile.id === record.id)).toBe(false);
   });
 
   it('changing a non-public field keeps the listing visible', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { approveApplication, declineApplication, editProfile, enqueueSubmission, requestChanges, resolveDuplicate, startReview, submitIntake, validateIntake } from './application';
+import { approveApplication, declineApplication, editProfile, enqueueSubmission, intakeValidationErrors, requestChanges, resolveDuplicate, startReview, submitIntake, validateIntake } from './application';
 import { saveDraft } from './drafts';
 import { resolveConflict, syncQueue } from './queue';
 import { ctxFor, fresh } from '../test/helpers';
@@ -7,10 +7,11 @@ import type { IntakeFields, IntakeSource } from './types';
 
 const SOURCE_A: IntakeSource = { mode: 'assisted', siteId: 'site-a', coordinatorId: 'coord-a', capturedOn: '2026-10-26' };
 
-function completeFields(overrides: Partial<IntakeFields> = {}): IntakeFields {
+function completeFields(overrides: Partial<IntakeFields> = {}): IntakeFields & { domain: string } {
   return {
     name: 'Test Person (fictional)',
     displayName: 'Test Person (demo)',
+    domain: 'Design',
     practice: 'Illustration',
     skills: ['Picture-book pages'],
     area: 'Area 2 (broad, fictional)',
@@ -44,6 +45,13 @@ describe('validateIntake', () => {
     expect(validateIntake(completeFields({ skills: ['   '] }))).not.toBeNull();
     expect(validateIntake(completeFields({ evidence: [{ id: 'blank', kind: 'sample', text: '   ', publicApproved: false }] }))).not.toBeNull();
     expect(validateIntake(completeFields({ followUp: { kind: 'own_channel', channelLabel: '  ' } }))).not.toBeNull();
+  });
+
+  it('requires one of the nine taxonomy domains and a nonblank free-text practice', () => {
+    expect(intakeValidationErrors(completeFields({ domain: '' })).map((error) => error.field)).toContain('domain');
+    expect(intakeValidationErrors(completeFields({ domain: 'Design-adjacent' })).map((error) => error.field)).toContain('domain');
+    expect(intakeValidationErrors(completeFields({ practice: '  ' })).map((error) => error.field)).toContain('practice');
+    expect(validateIntake(completeFields({ domain: 'Performing Arts', practice: 'Experimental shadow-puppet music theatre (fictional)' }))).toBeNull();
   });
 });
 

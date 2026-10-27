@@ -23,10 +23,28 @@ test('self-service intake saves each step, validates consent, submits once, and 
   await page.getByLabel('Name for the council record').fill('Jun Maker (fictional)');
   await page.getByLabel('Display name').fill('Jun Maker (demo)');
   await page.getByRole('button', { name: 'Continue to creative practice' }).click();
-  await page.getByLabel('Creative practice').selectOption('Film / video production');
+  const domainOptions = await page.getByLabel('Creative domain').locator('option').allTextContents();
+  expect(domainOptions).toEqual(['Choose a creative domain', 'Audiovisual Media', 'Digital Interactive Media', 'Creative Services', 'Design', 'Publishing and Printed Media', 'Performing Arts', 'Visual Arts', 'Traditional Cultural Expressions', 'Cultural Sites']);
+  const domainExamples: Record<string, string> = {
+    'Audiovisual Media': 'Examples include film, television, animation, and podcasts.',
+    'Digital Interactive Media': 'Examples include apps, video games, and interactive XR.',
+    'Creative Services': 'Examples include advertising, marketing, and creative research.',
+    Design: 'Examples include architecture, fashion, and product design.',
+    'Publishing and Printed Media': 'Examples include books, comics, and blogs.',
+    'Performing Arts': 'Examples include live music, dance, and theatre.',
+    'Visual Arts': 'Examples include painting, sculpture, and photography.',
+    'Traditional Cultural Expressions': 'Examples include crafts, culinary traditions, and festivals.',
+    'Cultural Sites': 'Examples include museum, library, and heritage exhibition work.',
+  };
+  for (const [domain, example] of Object.entries(domainExamples)) {
+    await page.getByLabel('Creative domain').selectOption(domain);
+    await expect(page.locator('#intake-domain-example')).toHaveText(example);
+  }
+  await page.getByLabel('Creative domain').selectOption('Performing Arts');
+  await page.getByLabel('Specific creative practice').fill('Experimental shadow-puppet music theatre (fictional)');
   await page.getByLabel('Skills').press('Control+A');
   await page.getByLabel('Skills').pressSequentially('Editing, Storyboarding', { delay: 5 });
-  await page.getByLabel('Broad area').selectOption('Area 3 (broad, fictional)');
+  await page.getByLabel('General location').selectOption('Area 3 (broad, fictional)');
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Creative practice' })).toBeVisible();
   await expect(page.getByLabel('Skills')).toHaveValue('Editing, Storyboarding');
@@ -44,7 +62,8 @@ test('self-service intake saves each step, validates consent, submits once, and 
   expect(saved).toMatchObject({
     name: 'Jun Maker (fictional)',
     displayName: 'Jun Maker (demo)',
-    practice: 'Film / video production',
+    domain: 'Performing Arts',
+    practice: 'Experimental shadow-puppet music theatre (fictional)',
     skills: ['Editing', 'Storyboarding'],
     area: 'Area 3 (broad, fictional)',
     followUp: { kind: 'own_channel', channelLabel: 'Demo contact: Jun (fictional)' },
@@ -56,6 +75,8 @@ test('self-service intake saves each step, validates consent, submits once, and 
   await page.getByRole('button', { name: 'Review and privacy choices' }).click();
   await expect(page.getByRole('heading', { name: 'Check your information' })).toBeVisible();
   await expect(page.getByText('Editing, Storyboarding')).toBeVisible();
+  await expect(page.locator('.compact-readback').getByText('Performing Arts')).toBeVisible();
+  await expect(page.locator('.compact-readback').getByText('Experimental shadow-puppet music theatre (fictional)')).toBeVisible();
   const publicPreview = page.locator('article').filter({ hasText: 'Draft preview · not publicly listed' });
   await expect(publicPreview.getByText('A short editing sample (fictional)')).toBeVisible();
   await expect(publicPreview.getByText('Jun Maker (fictional)')).toHaveCount(0);
@@ -123,7 +144,8 @@ test('a requested correction reuses its record and applies the new directory cho
   await expect(page.getByRole('heading', { name: 'About you' })).toBeVisible();
   await expect(page.getByLabel('Name for the council record')).not.toHaveValue('');
   await page.getByRole('button', { name: 'Continue to creative practice' }).click();
-  await expect(page.getByLabel('Creative practice')).not.toHaveValue('');
+  await expect(page.getByLabel('Creative domain')).not.toHaveValue('');
+  await expect(page.getByLabel('Specific creative practice')).not.toHaveValue('');
   await page.getByRole('button', { name: 'Continue to work evidence' }).click();
   await expect(page.getByText('Describe at least one piece of work evidence. A polished portfolio is not required.')).toBeVisible();
   await page.getByRole('button', { name: 'Add a work example' }).click();
@@ -226,9 +248,10 @@ test('assisted intake stays private in queue, and later drafts stay isolated acr
   await page.getByLabel('Name for the council record').fill('Rosa (fictional)');
   await page.getByLabel('Display name').fill('Rosa (demo)');
   await page.getByRole('button', { name: 'Continue to creative practice' }).click();
-  await page.getByLabel('Creative practice').selectOption('Illustration');
+  await page.getByLabel('Creative domain').selectOption('Visual Arts');
+  await page.getByLabel('Specific creative practice').fill('Illustration');
   await page.getByLabel('Skills').fill('Color study');
-  await page.getByLabel('Broad area').selectOption('Area 2 (broad, fictional)');
+  await page.getByLabel('General location').selectOption('Area 2 (broad, fictional)');
   await page.getByRole('button', { name: 'Continue to work evidence' }).click();
   await page.getByRole('button', { name: 'Add a work example' }).click();
   await page.getByLabel('Description or link text').fill('Color study samples (fictional)');
@@ -360,6 +383,14 @@ test('keyboard users can complete the intake and submit after correcting errors'
   await expect(continuePractice).toBeFocused();
   await page.keyboard.press('Enter');
 
+  const domain = page.getByLabel('Creative domain');
+  await tabUntil(page, domain);
+  await page.keyboard.press('P');
+  await page.keyboard.press('Enter');
+  const practice = page.getByLabel('Specific creative practice');
+  await tabUntil(page, practice);
+  await page.keyboard.type('Keyboard arts practice (fictional)');
+
   const skills = page.getByLabel('Skills');
   await tabUntil(page, skills);
   await page.keyboard.press('Control+A');
@@ -395,6 +426,29 @@ test('keyboard users can complete the intake and submit after correcting errors'
   await expect(submit).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByText('Received by the council', { exact: false })).toBeVisible();
+});
+
+test('the missing creative domain error can focus its control from the review summary', async ({ page }) => {
+  await page.goto('./');
+  await page.evaluate(() => {
+    const saved = JSON.parse(window.localStorage.getItem('ccz-demo:v1') ?? '{}');
+    saved.state.personaId = 'jun';
+    const draft = saved.state.data.drafts.find((item: { id: string }) => item.id === 'draft-jun');
+    draft.fields = { ...draft.fields, domain: '', acknowledged: true, evidence: [{ id: 'error-sample', kind: 'sample', text: 'Fictional sample', publicApproved: false }] };
+    window.localStorage.setItem('ccz-demo:v1', JSON.stringify(saved));
+  });
+  await page.reload();
+  await page.goto('./#/apply/review?draftId=draft-jun');
+  await page.getByRole('button', { name: 'Submit application' }).click();
+  await expect(page.getByText('Choose one of the nine creative domains.')).toBeVisible();
+  await page.getByRole('button', { name: 'Choose one of the nine creative domains.' }).click();
+  await expect(page.getByLabel('Creative domain')).toBeFocused();
+  await expect(page).toHaveURL(/#\/apply\?step=2&focus=domain&draftId=draft-jun/);
+});
+
+test('an unknown focus query keeps the normal route heading focus', async ({ page }) => {
+  await page.goto('./#/apply?focus=unknown');
+  await expect(page.locator('main h1')).toBeFocused();
 });
 
 test('C01 received, correction, and declined review states pass narrow accessibility checks', async ({ page }) => {

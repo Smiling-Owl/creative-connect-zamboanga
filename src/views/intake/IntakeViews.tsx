@@ -9,14 +9,15 @@ import { creativeNextAction, creativeView, noticesFor } from '../../domain/selec
 import { projectPublicIntake } from '../../domain/publicProfile';
 import { APPLICATION_LABEL, LISTING_LABEL, UPDATE_PENDING_LABEL } from '../../labels';
 import type { IntakeFields, IntakeSource } from '../../domain/types';
+import { CREATIVE_DOMAINS } from '../../domain/taxonomy';
 import { demoTime, useDemo } from '../../state/store';
 
-const PRACTICES = ['Graphic design', 'Visual arts', 'Digital content', 'Film / video production', 'Crafts', 'Illustration', 'Other'];
 const AREAS = ['Area 1 (broad, fictional)', 'Area 2 (broad, fictional)', 'Area 3 (broad, fictional)'];
 const INTERESTS = ['Portfolio feedback', 'Business guidance', 'Intellectual property information', 'Training and workshops', 'Referral opportunities'];
 const ERROR_TARGETS: Record<string, string> = {
   name: 'intake-name',
   displayName: 'intake-display',
+  domain: 'intake-domain',
   practice: 'intake-practice',
   area: 'intake-area',
   skills: 'intake-skills',
@@ -27,8 +28,23 @@ const ERROR_TARGETS: Record<string, string> = {
 
 function stepForField(field: string): 1 | 2 | 3 {
   if (['name', 'displayName', 'followUp'].includes(field)) return 1;
-  if (['practice', 'area', 'skills'].includes(field)) return 2;
+  if (['domain', 'practice', 'area', 'skills'].includes(field)) return 2;
   return 3;
+}
+
+function domainExample(domain: string): string {
+  switch (domain) {
+    case 'Audiovisual Media': return 'Examples include film, television, animation, and podcasts.';
+    case 'Digital Interactive Media': return 'Examples include apps, video games, and interactive XR.';
+    case 'Creative Services': return 'Examples include advertising, marketing, and creative research.';
+    case 'Design': return 'Examples include architecture, fashion, and product design.';
+    case 'Publishing and Printed Media': return 'Examples include books, comics, and blogs.';
+    case 'Performing Arts': return 'Examples include live music, dance, and theatre.';
+    case 'Visual Arts': return 'Examples include painting, sculpture, and photography.';
+    case 'Traditional Cultural Expressions': return 'Examples include crafts, culinary traditions, and festivals.';
+    case 'Cultural Sites': return 'Examples include museum, library, and heritage exhibition work.';
+    default: return 'Choose the main category for your work.';
+  }
 }
 
 function intakeKey(ownerId: string, localId: string | null): string {
@@ -39,6 +55,7 @@ function blankFields(): IntakeFields {
   return {
     name: '',
     displayName: '',
+    domain: '',
     practice: '',
     skills: [],
     area: '',
@@ -184,9 +201,10 @@ function IntakeForm() {
       <p><Button onClick={() => setStep(2)}>Continue to creative practice</Button></p>
     </section> : null}
     {step === 2 ? <section className="public-card"><h2>Creative practice</h2>
-      <label className="field-inline" htmlFor="intake-practice">Creative practice<select id="intake-practice" value={fields.practice} onChange={(e) => changeFields({ ...fields, practice: e.target.value })}><option value="">Choose a practice</option>{fields.practice && !PRACTICES.includes(fields.practice) ? <option>{fields.practice}</option> : null}{PRACTICES.map((item) => <option key={item}>{item}</option>)}</select></label>
+      <div className="field-inline"><label htmlFor="intake-domain">Creative domain</label><select id="intake-domain" name="domain" aria-describedby="intake-domain-help intake-domain-example" value={fields.domain} onChange={(e) => changeFields({ ...fields, domain: e.target.value })}><option value="">Choose a creative domain</option>{CREATIVE_DOMAINS.map((item) => <option key={item}>{item}</option>)}</select><span id="intake-domain-help" className="field-hint">Choose the main category for your work.</span><span id="intake-domain-example" className="field-hint" aria-live="polite">{fields.domain ? domainExample(fields.domain) : ''}</span></div>
+      <div className="field-inline"><label htmlFor="intake-practice">Specific creative practice</label><input id="intake-practice" name="practice" aria-describedby="intake-practice-help" value={fields.practice} onChange={(e) => changeFields({ ...fields, practice: e.target.value })} autoComplete="off" /><span id="intake-practice-help" className="field-hint">Describe the work you do in your own words.</span></div>
       <label className="field-inline" htmlFor="intake-skills">Skills <span className="field-hint">Separate skills with commas.</span><input id="intake-skills" value={skillsText ?? fields.skills.join(', ')} onChange={(e) => { const raw = e.target.value; setSkillsText(raw); changeFields({ ...fields, skills: raw.split(',').map((item) => item.trim()).filter(Boolean) }); }} onBlur={() => { changeFields({ ...fields, skills: (skillsText ?? fields.skills.join(', ')).split(',').map((item) => item.trim()).filter(Boolean) }); setSkillsText(null); }} autoComplete="off" /></label>
-      <label className="field-inline" htmlFor="intake-area">Broad area<select id="intake-area" value={fields.area} onChange={(e) => changeFields({ ...fields, area: e.target.value })}><option value="">Choose a broad area</option>{fields.area && !AREAS.includes(fields.area) ? <option>{fields.area}</option> : null}{AREAS.map((item) => <option key={item}>{item}</option>)}</select></label>
+      <div className="field-inline"><label htmlFor="intake-area">General location</label><select id="intake-area" name="area" aria-describedby="intake-area-help" value={fields.area} onChange={(e) => changeFields({ ...fields, area: e.target.value })}><option value="">Choose a general location</option>{fields.area && !AREAS.includes(fields.area) ? <option>{fields.area}</option> : null}{AREAS.map((item) => <option key={item}>{item}</option>)}</select><span id="intake-area-help" className="field-hint">Your barangay, district, or general area. Do not enter a street address.</span></div>
       <fieldset className="intake-fieldset"><legend>What support interests you?</legend>{INTERESTS.map((interest) => <label className="choice-row" key={interest}><input type="checkbox" checked={fields.interests.includes(interest)} onChange={(e) => changeFields({ ...fields, interests: e.target.checked ? [...fields.interests, interest] : fields.interests.filter((item) => item !== interest) })} />{interest}</label>)}</fieldset>
       <div className="action-row"><Button variant="secondary" onClick={() => setStep(1)}>Back</Button><Button onClick={() => setStep(3)}>Continue to work evidence</Button></div>
     </section> : null}
@@ -278,11 +296,11 @@ function IntakeReview() {
   return <div className="intake-layout">
     {showErrors && errors.length ? <section className="notice notice-danger intake-error-summary" aria-labelledby="error-summary-title" ref={errorRef} tabIndex={-1}><h2 id="error-summary-title">Check the information before submitting</h2><ul>{errors.map((error) => <li key={error.field}><button type="button" className="text-button" onClick={() => focusOrEditField(error.field)}>{error.message}</button></li>)}</ul></section> : null}
     {feedback ? <Notice tone="warning">{feedback}</Notice> : null}
-    <section className="public-card"><h2>Check your information</h2><div className="readback-group"><h3>About you <Link to={editLink(1)}>Edit</Link></h3><dl className="compact-readback"><dt>Name for the council record</dt><dd>{draft.fields.name || 'Not added yet'}</dd><dt>Display name</dt><dd>{draft.fields.displayName || 'Not added yet'}</dd><dt>Follow-up</dt><dd>{draft.fields.followUp.kind === 'coordinator_mediated' ? 'Coordinator-mediated follow-up' : draft.fields.followUp.channelLabel || 'Not added yet'}</dd></dl></div><div className="readback-group"><h3>Creative practice <Link to={editLink(2)}>Edit</Link></h3><dl className="compact-readback"><dt>Practice</dt><dd>{draft.fields.practice || 'Not added yet'}</dd><dt>Skills</dt><dd>{draft.fields.skills.join(', ') || 'Not added yet'}</dd><dt>Broad area</dt><dd>{draft.fields.area || 'Not added yet'}</dd><dt>Support interests</dt><dd>{draft.fields.interests.join(', ') || 'None selected'}</dd></dl></div><div className="readback-group"><h3>Work evidence <Link to={editLink(3)}>Edit</Link></h3>{draft.fields.evidence.length ? <ul>{draft.fields.evidence.map((item) => <li key={item.id}>{item.kind.replace('_', ' ')}: {item.text || 'Description not added yet'} · {item.publicApproved ? 'May be shown if you choose public listing' : 'Kept private'}</li>)}</ul> : <p>No work examples added yet.</p>}</div>
+    <section className="public-card"><h2>Check your information</h2><div className="readback-group"><h3>About you <Link to={editLink(1)}>Edit</Link></h3><dl className="compact-readback"><dt>Name for the council record</dt><dd>{draft.fields.name || 'Not added yet'}</dd><dt>Display name</dt><dd>{draft.fields.displayName || 'Not added yet'}</dd><dt>Follow-up</dt><dd>{draft.fields.followUp.kind === 'coordinator_mediated' ? 'Coordinator-mediated follow-up' : draft.fields.followUp.channelLabel || 'Not added yet'}</dd></dl></div><div className="readback-group"><h3>Creative practice <Link to={editLink(2)}>Edit</Link></h3><dl className="compact-readback"><dt>Creative domain</dt><dd>{draft.fields.domain || 'Not added yet'}</dd><dt>Specific creative practice</dt><dd>{draft.fields.practice || 'Not added yet'}</dd><dt>Skills</dt><dd>{draft.fields.skills.join(', ') || 'Not added yet'}</dd><dt>General location</dt><dd>{draft.fields.area || 'Not added yet'}</dd><dt>Support interests</dt><dd>{draft.fields.interests.join(', ') || 'None selected'}</dd></dl></div><div className="readback-group"><h3>Work evidence <Link to={editLink(3)}>Edit</Link></h3>{draft.fields.evidence.length ? <ul>{draft.fields.evidence.map((item) => <li key={item.id}>{item.kind.replace('_', ' ')}: {item.text || 'Description not added yet'} · {item.publicApproved ? 'May be shown if you choose public listing' : 'Kept private'}</li>)}</ul> : <p>No work examples added yet.</p>}</div>
       <p><strong>Intake source:</strong> {assisted ? 'Coordinator-assisted' : 'Self-service'}{assisted && site ? ` · ${site.name}` : ''}{assisted ? ` · ${draft.source.coordinatorId} · ${draft.source.capturedOn}` : ''}</p>
     </section>
     <Notice tone="info" title="Information use — demo wording, pending council approval"><p>The council collects the details above to review membership and consider you for support. Authorized council staff can see your application. You can correct or ask to withdraw information through the council; a coordinator can help you reach them.</p></Notice>
-    <section className="public-card"><h2>Public directory choice</h2><p>This choice is separate from your application. Saying no to a public listing does not affect support.</p><label className="choice-row"><input type="checkbox" checked={meta?.optedIn ?? false} onChange={(e) => setIntakeUi(key, { optedIn: e.target.checked })} /> I want to be considered for the public directory</label><h3>Public profile preview</h3><p>Only the display name, practice, skills, broad area, and work examples you marked OK to show can appear here. This draft is not public.</p><PublicProfileCard profile={preview} eyebrow="Draft preview · not publicly listed" draftPreview /></section>
+    <section className="public-card"><h2>Public directory choice</h2><p>This choice is separate from your application. Saying no to a public listing does not affect support.</p><label className="choice-row"><input type="checkbox" checked={meta?.optedIn ?? false} onChange={(e) => setIntakeUi(key, { optedIn: e.target.checked })} /> I want to be considered for the public directory</label><h3>Public profile preview</h3><p>Only the display name, creative domain, specific practice, skills, general location, and work examples you marked OK to show can appear here. This draft is not public.</p><PublicProfileCard profile={preview} eyebrow="Draft preview · not publicly listed" draftPreview /></section>
     <section className="public-card"><label className="choice-row"><input id="intake-acknowledged" type="checkbox" checked={draft.fields.acknowledged} onChange={(e) => changeFields({ ...draft.fields, acknowledged: e.target.checked })} /> I understand what information is collected and how it is used.</label><p>Required to submit. This acknowledges the notice; it does not opt you into the public directory.</p></section>
     <div className="action-row"><Link className="btn btn-secondary" to={editLink(3)}>Edit intake</Link><Button variant="secondary" onClick={saveAndExit}>Save draft</Button><Button onClick={submit}>Submit application</Button></div>
   </div>;

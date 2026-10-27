@@ -18,7 +18,11 @@ Client-reported conditions (authoritative statements of the client's problem, no
 
 Problem the team chose to solve first (PROPOSED hypothesis, untested): creatives outside the council's network may not know how to join, see no concrete benefit, or need help registering; the council therefore lacks current, usable records. Selected approach: **benefit-first onboarding delivered through assisted community outreach**, with self-service as an alternative route and the directory as a by-product of serving people.
 
-Priority domain for initial pilots (CONFIRMED): design and visual creative services — graphic design, visual arts, digital content, film/video production, crafts. The council has nine domains in total; the full taxonomy is OPEN.
+Priority practices for initial pilots (CONFIRMED): design and visual creative services — graphic design, visual arts, digital content, film/video production, crafts. These priorities do not replace the nine creative-industry domains used for classification.
+
+Creative classification revision (APPROVED by the team, 2026-10-27): capture one creative domain and a required free-text specific creative practice. Domain options follow Section 3 of [RA 11904, Philippine Creative Industries Development Act](https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/2/95614): Audiovisual Media; Digital Interactive Media; Creative Services; Design; Publishing and Printed Media; Performing Arts; Visual Arts; Traditional Cultural Expressions; Cultural Sites. Do not infer a person's domain from their practice text. The council's detailed sub-sector list is pending; do not present an invented fixed list as approved. Domain selection is classification, not council verification or a promise of eligibility/support.
+
+Location terminology: the UI calls the existing broad-area field **General location**. It means a barangay, district, or general locality, separate from creative domain/practice. It never asks for a street address. The prototype retains explicitly fictional Area 1/2/3 values until the council approves the real location list.
 
 ## Users / Actors
 
@@ -39,12 +43,12 @@ Functional requirements (CONFIRMED unless marked):
 
 1. **Program discovery** — explain who the service is for, benefits, limits (no guaranteed work, no permit/certification), and how to get registration assistance. Starting registration from an opportunity preserves that opportunity as the return destination.
 2. **Access simulation** — creative sign-up/sign-in, invited staff access, contact verification, invitation claim of an existing record, and recovery states (including expired link and help route). State clearly that no real credentials are processed.
-3. **Shared intake** — one workflow in self-service and coordinator-assisted modes; drafts; name/display name, creative practice, skills, broad area, interests, follow-up arrangement, work evidence. Never require a polished online portfolio or business permit. Allow coordinator-mediated follow-up when the person has no device/contact channel. Assisted mode records intake source, site and assisting coordinator; assistance is not substitute consent.
+3. **Shared intake** — one workflow in self-service and coordinator-assisted modes; drafts; name/display name, creative domain, free-text specific creative practice, skills, general location, interests, follow-up arrangement, work evidence. Never require a polished online portfolio or business permit. Allow coordinator-mediated follow-up when the person has no device/contact channel. Assisted mode records intake source, site and assisting coordinator; assistance is not substitute consent.
 4. **Privacy choices** — readable information-use explanation, plus a separate optional public-directory choice that starts **off**. Refusing public listing never blocks support. Private contact, evidence, and internal notes never appear in public previews.
 5. **Submission status** — distinguish draft, queued on device (simulated), received (council receipt), and under review. Show a reference and the next action. Coordinator attribution and site survive handoffs.
 6. **Offline demonstration** — queued, failed/retry, received, and possible-conflict states with an explicit simulated reconnection. No review before simulated receipt; no duplicates from repeated submit or retry.
 7. **Council review** — evidence and contact/follow-up checks, duplicate warning, approve / request changes / decline with a reason, review history, correction and human-review paths. Never rank or score artistic quality automatically.
-8. **Directory** — search and filter by skill/practice and broad area; lists only verified, opted-in, publishable profiles. Public profile shows permitted work evidence and a council-mediated inquiry route.
+8. **Directory** — search and filter by creative domain, skill/practice, and general location; lists only verified, opted-in, publishable profiles. Public profile shows permitted work evidence and a council-mediated inquiry route.
 9. **Profile maintenance** — edit, public preview, visibility withdrawal, last-updated and refresh prompt, correction or withdrawal request. Indicate which changes require renewed review. Turning visibility off removes the public listing without affecting eligibility for support.
 10. **Guidance** — public, council-curated examples on formalization, IP, and support resources, each showing source and last-reviewed date. Guidance is not legal advice, permit issuance, or certification.
 11. **Opportunity management** — draft, preview, publish, edit, close, cancel; fields: provider, eligibility, cost, capacity, dates/deadline, delivery location/mode, responsible owner, next step.
@@ -194,7 +198,7 @@ Council (prototype proceeds with explicit fictional assumptions):
 
 7. Representative/user access for feedback.
 8. Actual pilot sites, coordinators, opportunities, and providers.
-9. Definition of "verified", evidence rules, and the complete domain taxonomy.
+9. Definition of "verified", evidence rules, and council-approved detailed sub-sector taxonomy. The nine domain names are established; the prototype uses free-text specific practice pending that detail.
 10. Adult/minor eligibility.
 11. Required languages, devices, and connectivity at sites.
 12. Real incentives available and who funds them.

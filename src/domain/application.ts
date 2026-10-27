@@ -1,6 +1,7 @@
 import { can } from './policy';
 import { cloneData, fail, findRecord, log, nextId, nextReference, nextDeviceRef, normalize, reasonMissing, requireReason } from './core';
 import { publicFingerprint } from './visibility';
+import { isCreativeDomain } from './taxonomy';
 import { creativeFollowUp } from './drafts';
 import type {
   Application,
@@ -25,8 +26,9 @@ export function intakeValidationErrors(fields: IntakeFields): IntakeValidationEr
   const errors: IntakeValidationError[] = [];
   if (fields.displayName.trim() === '') errors.push({ field: 'displayName', message: 'Add a display name. It can be a first name or a nickname.' });
   if (fields.name.trim() === '') errors.push({ field: 'name', message: 'Add a name for the council record.' });
-  if (fields.practice.trim() === '') errors.push({ field: 'practice', message: 'Choose a creative practice.' });
-  if (fields.area.trim() === '') errors.push({ field: 'area', message: 'Choose a broad area.' });
+  if (!isCreativeDomain(fields.domain)) errors.push({ field: 'domain', message: 'Choose one of the nine creative domains.' });
+  if (fields.practice.trim() === '') errors.push({ field: 'practice', message: 'Add your specific creative practice in your own words.' });
+  if (fields.area.trim() === '') errors.push({ field: 'area', message: 'Choose a general location.' });
   if (!fields.skills.some((skill) => skill.trim() !== '')) errors.push({ field: 'skills', message: 'Add at least one non-empty skill.' });
   if (!fields.evidence.some((item) => item.text.trim() !== '')) {
     errors.push({ field: 'evidence', message: 'Describe at least one piece of work evidence. A polished portfolio is not required.' });

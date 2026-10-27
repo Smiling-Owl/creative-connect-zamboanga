@@ -12,7 +12,7 @@ FR 3, 4, 5, 7 (creative side) in `project-overview.md`; application state machin
 
 1. **R01 Intake** (stepper, each step saved to the store as a draft):
    - About you: name, display name (defaults to name), follow-up arrangement — own channel (fictional label) **or** coordinator-mediated (records responsible coordinator).
-   - Practice: creative practice (demo list from the brief's priority areas + "Other"), skills (free tags), broad area (fictional/broad list), support interests.
+   - Practice (revised by the team, 2026-10-27): creative domain (nine RA 11904 domains) plus required free-text specific creative practice; skills (free tags), general location (existing fictional broad-area list, never street address), support interests. Detailed sub-sectors remain pending council input; do not invent a fixed approved list.
    - Work evidence: add one or more items — link (text), sample description, or assisted description by coordinator; per item, "OK to show publicly if I choose a public listing". Copy states a polished portfolio or business permit is not required.
    - Assisted mode (from coordinator workspace): intake source, site, coordinator, date captured automatically and shown read-only; a reminder that the creative makes their own choices.
 2. **R02 Review and submit:** readback with "Edit" links to each step; information-use explanation in plain language (what is collected, why, who sees it, how to correct/withdraw — demo wording, labeled pending council approval); required acknowledgment; **separate** public-listing choice, off by default, with live public preview (P03 component via projection) and the note that declining does not affect support; Save draft; Submit.

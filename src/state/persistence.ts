@@ -6,7 +6,7 @@ import type { DemoSettings, DomainData } from '../domain/types';
 // Every storage call is guarded: private windows and blocked storage must not break the prototype.
 
 export const STORAGE_KEY = 'ccz-demo:v1';
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export interface DemoAccessState {
   recovery: 'idle' | 'code_requested' | 'expired' | 'help';

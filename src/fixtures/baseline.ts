@@ -23,7 +23,7 @@ const SOURCE_A: IntakeSource = { mode: 'assisted', siteId: 'site-a', coordinator
 const SOURCE_B: IntakeSource = { mode: 'assisted', siteId: 'site-b', coordinatorId: 'coord-b', capturedOn: '2026-10-10' };
 
 
-function intake(overrides: Partial<IntakeFields> & Pick<IntakeFields, 'displayName' | 'practice' | 'skills' | 'area'>): IntakeFields {
+function intake(overrides: Partial<IntakeFields> & Pick<IntakeFields, 'displayName' | 'domain' | 'practice' | 'skills' | 'area'>): IntakeFields {
   const evidence = overrides.evidence ?? [
     { id: `ev-${overrides.displayName.replace(/\W+/g, '-').toLowerCase()}`, kind: 'sample', text: 'Sample set: six demo artworks (fictional)', publicApproved: true },
   ];
@@ -83,6 +83,7 @@ function record(
 
 const rhea = intake({
   displayName: 'Rhea Dimaano (demo)',
+  domain: 'Design',
   practice: 'Graphic design',
   skills: ['Poster layout', 'Logo sketching'],
   area: 'Area 1 (broad, fictional)',
@@ -91,6 +92,7 @@ const rhea = intake({
 
 const dani = intake({
   displayName: 'Dani Ocampo (demo)',
+  domain: 'Visual Arts',
   practice: 'Visual arts',
   skills: ['Watercolor', 'Illustration'],
   area: 'Area 2 (broad, fictional)',
@@ -100,6 +102,7 @@ const dani = intake({
 
 const noel = intake({
   displayName: 'Noel Pascual (demo)',
+  domain: 'Audiovisual Media',
   practice: 'Film / video',
   skills: ['Editing', 'Short documentary'],
   area: 'Area 3 (broad, fictional)',
@@ -108,6 +111,7 @@ const noel = intake({
 
 const vina = intake({
   displayName: 'Vina Salazar (demo)',
+  domain: 'Traditional Cultural Expressions',
   practice: 'Crafts',
   skills: ['Weaving'],
   area: 'Area 1 (broad, fictional)',
@@ -115,6 +119,7 @@ const vina = intake({
 
 const joel = intake({
   displayName: 'Joel Tan (demo)',
+  domain: 'Design',
   practice: 'Digital content',
   skills: ['Social graphics'],
   area: 'Area 1 (broad, fictional)',
@@ -123,6 +128,7 @@ const joel = intake({
 
 const joelSecond = intake({
   displayName: 'Joel Tan (demo)',
+  domain: 'Design',
   practice: 'Digital content',
   skills: ['Animated posters'],
   area: 'Area 1 (broad, fictional)',
@@ -131,6 +137,7 @@ const joelSecond = intake({
 
 const lorenz = intake({
   displayName: 'Lorenz Villanueva (demo)',
+  domain: 'Publishing and Printed Media',
   practice: 'Other (writing and zines)',
   skills: ['Zine layout'],
   area: 'Area 3 (broad, fictional)',
@@ -139,6 +146,7 @@ const lorenz = intake({
 
 const gwen = intake({
   displayName: 'Gwen Alcantara (demo)',
+  domain: 'Design',
   practice: 'Graphic design',
   skills: ['Event flyers'],
   area: 'Area 2 (broad, fictional)',
@@ -147,6 +155,7 @@ const gwen = intake({
 
 const gwenRevised = intake({
   displayName: 'Gwen Alcantara (demo)',
+  domain: 'Design',
   practice: 'Graphic design',
   skills: ['Event flyers', 'Signage'],
   area: 'Area 2 (broad, fictional)',
@@ -155,6 +164,7 @@ const gwenRevised = intake({
 
 const ines = intake({
   displayName: 'Ines Cabrera (demo)',
+  domain: 'Visual Arts',
   practice: 'Visual arts',
   skills: ['Ink drawing'],
   area: 'Area 2 (broad, fictional)',
@@ -165,6 +175,7 @@ const ines = intake({
 const mikaDraft = intake({
   displayName: 'Mika (demo)',
   name: 'Mika (fictional)',
+  domain: 'Visual Arts',
   practice: 'Illustration',
   skills: ['Character design', 'Picture-book pages'],
   area: 'Area 2 (broad, fictional)',
@@ -177,6 +188,7 @@ const mikaDraft = intake({
 const junDraft = intake({
   displayName: 'Jun (demo)',
   name: 'Jun (fictional)',
+  domain: 'Audiovisual Media',
   practice: 'Film / video',
   skills: ['Video editing'],
   area: 'Area 3 (broad, fictional)',

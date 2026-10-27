@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { projectPublicIntake, publicDirectory, publicProfileById, searchDirectory } from './publicProfile';
 import { fresh } from '../test/helpers';
+import type { IntakeFields } from './types';
 
 // Strings that must never appear in any public output: contact labels, follow-up routes, notes,
 // site and coordinator details, council references, and non-approved evidence.
@@ -30,19 +31,26 @@ describe('public projection', () => {
     expect(searchDirectory(fresh(), { skill: 'Poster layout' }).map((profile) => profile.id)).toEqual(['rec-rhea']);
   });
 
+  it('filters by public creative domain while preserving the specific practice filter', () => {
+    expect(searchDirectory(fresh(), { domain: 'Visual Arts' }).map((profile) => profile.id)).toEqual(['rec-dani']);
+    expect(searchDirectory(fresh(), { practice: 'Watercolor' })).toEqual([]);
+  });
+
   it('previews only display fields and explicitly approved evidence from an intake draft', () => {
     const fields = fresh().drafts.find((draft) => draft.id === 'draft-jun')!.fields;
     const preview = projectPublicIntake('draft-preview', {
       ...fields,
+      domain: 'Design',
       displayName: 'Preview name (demo)',
       evidence: [
         { id: 'ok', kind: 'sample', text: 'Public sample (fictional)', publicApproved: true },
         { id: 'private', kind: 'sample', text: 'Private sample (fictional)', publicApproved: false },
       ],
-    }, '2026-10-26T09:00:00.000Z');
+    } as IntakeFields, '2026-10-26T09:00:00.000Z');
     expect(preview).toEqual({
       id: 'draft-preview',
       displayName: 'Preview name (demo)',
+      domain: 'Design',
       practice: fields.practice,
       skills: fields.skills,
       area: fields.area,
@@ -68,7 +76,7 @@ describe('public projection', () => {
       for (const marker of PRIVATE_MARKERS) {
         expect(text, `profile ${profile.id} leaks "${marker}"`).not.toContain(marker);
       }
-      expect(Object.keys(profile).sort()).toEqual(['area', 'displayName', 'evidence', 'id', 'lastUpdated', 'practice', 'skills']);
+      expect(Object.keys(profile).sort()).toEqual(['area', 'displayName', 'domain', 'evidence', 'id', 'lastUpdated', 'practice', 'skills']);
     }
   });
 

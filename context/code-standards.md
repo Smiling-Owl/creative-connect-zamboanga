@@ -20,6 +20,7 @@ src/
   labels.ts                # the only place for user-facing status wording (ui-context vocabulary)
   domain/                  # pure rules: no React, no storage, no Date.now()
     types.ts               # entities, state unions, Result and Ctx
+    taxonomy.ts            # nine statutory creative-domain names
     core.ts                # clone, deterministic ids, audit log, reasons, lookups
     policy.ts              # can(actor, action, target): frontend representation, not security
     application.ts         # intake validation, receipt, review, duplicates, profile updates
@@ -51,6 +52,8 @@ Feature 03 update (2026-10-27): P01–P06 and A01–A02 are implemented in `src/
 
 Feature 04 update (2026-10-27): R01/R02 and C01 live in `src/views/intake/IntakeViews.tsx`. `intakeValidationErrors` supplies field keys/messages; `validateIntake` retains the domain result contract. `projectPublicIntake` produces an unpublished preview using the same allow-list boundary and `PublicProfileCard` as P03. UI progress/receipt context is persisted separately from domain draft fields in schema version 3. `tests/e2e/intake.spec.ts` covers intake/status and alternate branches without adding production test backdoors or council-review screens.
 
+Classification revision (2026-10-27): the required domain field extends intake, projection, public-content fingerprint, and directory filtering; specific practice is free text. Persisted shape is now schema version 4, using the existing mismatch/reset notice. Visible location labels use **General location**, retaining internal `area` and fictional values.
+
 ## Naming
 
 - Files: `PascalCase.tsx` for components and views, `camelCase.ts` for modules.
@@ -68,7 +71,7 @@ Feature 04 update (2026-10-27): R01/R02 and C01 live in `src/views/intake/Intake
 ## Validation
 
 - Validate at two boundaries: form input (field-level messages and an error summary) and persisted state on load (shape and `schemaVersion`; on failure fall back to baseline fixtures with a notice).
-- Required intake fields are minimal: display name, name for the council record, practice, broad area, at least one skill, at least one piece of evidence (link, sample, or description), follow-up arrangement, and the information-use acknowledgment. Never require a portfolio URL, business permit, or government ID.
+- Required intake fields are minimal: display name, name for the council record, one valid creative domain, free-text specific creative practice, general location (`area` internally), at least one skill, at least one piece of evidence (link, sample, or description), follow-up arrangement, and the information-use acknowledgment. Never require a portfolio URL, business permit, or government ID.
 - Reasons are required (non-empty, trimmed) for: request changes, decline, not selected, withdraw, cancel, resolve duplicate, human-review decisions, outcome correction, and update change requests.
 
 ## Error Handling
@@ -110,7 +113,7 @@ No telemetry or remote logging. `console` output is limited to development warni
 
 ## Performance
 
-- Keep the production bundle small (target under 200 KB gzipped JS, PROPOSED). Current: about 104.5 KB. No images or fonts beyond inline SVG icons.
+- Keep the production bundle small (target under 200 KB gzipped JS, PROPOSED). Current: about 104.3 KB. No images or fonts beyond inline SVG icons.
 - Code-split by role area only if the bundle target is exceeded.
 
 ## Accessibility
@@ -119,18 +122,18 @@ Follow `ui-context.md` → Accessibility. Every new view must pass the axe scan 
 
 ## Verification Commands
 
-Current iteration verified on 2026-10-27 (Windows). Re-run before citing these results for later code changes. Sol Senior reviewed the source; a Luna worker implemented Feature 04. The requested model name “6.1 Luna” was unavailable, so the exposed `gpt-6-luna` worker role was used and disclosed.
+Current revision verified on 2026-10-27 (Windows). Re-run before citing these results for later code changes. Sol Senior reviewed the source; a Luna worker implemented the creative-domain revision after Feature 04. The requested model name “6.1 Luna” was unavailable, so the exposed `gpt-6-luna` worker role was used and disclosed.
 
 | Command | What it checks | Last result |
 |---|---|---|
 | `npm ci --no-audit --no-fund` | Clean install from the lockfile | exit 0; 237 packages |
 | `npm run typecheck` | `tsc --noEmit`, strict | exit 0 |
 | `npm run lint` | ESLint with typescript-eslint and react-hooks rules | exit 0 |
-| `npm test` | Vitest unit tests, single run | 125 passed (14 files) |
-| `npm run build` | Typecheck, then static build to `dist/` | exit 0, including browser-suite rebuild; 104.48 KB gzipped JS |
+| `npm test` | Vitest unit tests, single run | 129 passed (14 files) |
+| `npm run build` | Typecheck, then static build to `dist/` | exit 0, including browser-suite rebuild; 104.30 KB gzipped JS |
 | `npm run preview` | Serves `dist/` locally (demo fallback) | used by the e2e run |
-| `npm run test:e2e` | Playwright (Chromium), which builds and serves `dist/` | 25 passed with `PLAYWRIGHT_PORT=4188`; includes intake keyboard completion and axe/320/360 px checks |
+| `npm run test:e2e` | Playwright (Chromium), which builds and serves `dist/` | 28 passed with `PLAYWRIGHT_PORT=4188`; includes domain/filter/error-focus, intake keyboard completion, and axe/320/360 px checks |
 
-Chromium needs a one-time install: `npx playwright install chromium` (already installed on the presenting machine). This iteration used Vite on port 4190 for desktop/mobile intake, review, and status screenshots and browser-exception checks. The prior public/access checks remain in the browser suite. Manual screen-reader testing and full 200% zoom coverage remain unverified.
+Chromium needs a one-time install: `npx playwright install chromium` (already installed on the presenting machine). This revision used Vite on port 4190 for desktop/mobile intake step 2, review, and directory screenshots and browser-exception checks at 1280/320/360px. The prior public/access/status checks remain in the browser suite. Manual screen-reader testing and full 200% zoom coverage remain unverified.
 
 Do not cite a command as passing unless its result is recorded here from a run in the current session.

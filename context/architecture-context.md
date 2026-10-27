@@ -6,10 +6,17 @@ Decision markers: **APPROVED** (decided by the team), **PROPOSED** (recommended;
 
 A single static, client-only single-page application. All "system" behavior — accounts, roles, the council's records, the coordinator's device queue, connectivity, review decisions, referrals — is simulated inside one in-browser demo store seeded from fictional fixtures. There is no server, database, API, or network dependency at runtime.
 
+### Creative classification revision — 2026-10-27
+
+- Team-approved intake now stores `domain` separately from free-text `practice`. A shared domain list follows the nine names in RA 11904 Section 3; illustrative examples do not claim to be the council's pending detailed taxonomy.
+- Domain is validated on submission, included in the allow-listed public projection and public-content fingerprint, and available to directory filtering/search. A change to domain therefore requires public-content review like other published fields.
+- The UI calls the existing `area` field **General location** and explains the intended geographic scope. Fictional location values and privacy boundaries remain intact.
+- Persisted shape uses schema version 4. Under the existing prototype compatibility policy, older saved demo envelopes restore baseline fixtures with a notice; no production-data migration is implied.
+
 ### Feature 04 implementation notes — 2026-10-27
 
 - `src/views/intake/IntakeViews.tsx` implements the shared R01/R02 intake and C01 creative status views. Coordinator capture uses the same form with actor-derived, read-only source attribution. Later coordinator/council/profile/referral workspaces remain placeholders.
-- The existing storage envelope now uses `schemaVersion: 3`. `intakeUi` stores the last step, separate public-listing choice, receipt context, and bounded opportunity return context alongside domain drafts. Metadata keys include the acting owner's ID, including after the submitted draft is removed. Older envelopes reset with the compatibility notice.
+- Feature 04 introduced `schemaVersion: 3` (superseded by version 4 in the classification revision). `intakeUi` stores the last step, separate public-listing choice, receipt context, and bounded opportunity return context alongside domain drafts. Metadata keys include the acting owner's ID, including after the submitted draft is removed. Older envelopes reset with the compatibility notice.
 - Intake uses structured domain validation for field messages and a linked error summary. Whitespace-only skills, evidence, and own-channel labels are rejected. A description is valid work evidence; a portfolio URL, upload, permit, or ID is not required.
 - Error-summary actions focus the current field or navigate to the saved intake step with a focus target. They do not use fragment-only anchors, which would be interpreted as routes by `HashRouter`.
 - `projectPublicIntake` creates an allow-listed draft preview. R02 and P03 share `PublicProfileCard`; draft copy states that the preview is unpublished. Private readback information never enters the preview projection.
@@ -116,7 +123,7 @@ Conceptual entities (product needs, not a production schema). Identifiers are st
 - **Session**: current role (`guest | creative | coordinator | council`) and persona id. Set by the demo role switch or a simulated sign-in. Not security.
 - **Persona/staff**: fictional coordinators (with site/cohort assignment) and council administrators.
 - **Site**: fictional barangay/SK or school site (e.g., "Demo Site A — barangay hall"), never a real named partner.
-- **CreativeRecord**: display name, name, creative practice, skills, broad area, interests, follow-up arrangement (`own_channel` with a fictional channel label, or `coordinator_mediated` with the responsible coordinator), work evidence items (`link` text, `sample` description, or `assisted_description`; each with a creator-approved-for-public flag), intake source (`self_service | assisted`, coordinator, site, date), information-use acknowledgment, internal notes, account state (`none | invited | active`), last confirmed date, `version` (incremented on each received change).
+- **CreativeRecord**: display name, name, creative domain, free-text specific practice, skills, general location (`area` internally), interests, follow-up arrangement (`own_channel` with a fictional channel label, or `coordinator_mediated` with the responsible coordinator), work evidence items (`link` text, `sample` description, or `assisted_description`; each with a creator-approved-for-public flag), intake source (`self_service | assisted`, coordinator, site, date), information-use acknowledgment, internal notes, account state (`none | invited | active`), last confirmed date, `version` (incremented on each received change).
 - **Application** (one per record): state, council reference (assigned on receipt), review history, duplicate flag and resolution, `receivedAt`.
 - **PublicVisibility** (per record): `optedIn` boolean (default false), public-content review state (`not_submitted | pending | approved | changes_needed`), last approved public field snapshot.
 - **DeviceQueueItem** (coordinator device): local reference, record id, kind (`new_application | correction`), `baseVersion`, transfer status (`waiting | sending | failed | conflict | delivered`), attempts, last error, idempotency key.
@@ -208,7 +215,7 @@ None. The app makes **no network requests** after loading its own static assets:
 
 ## Security Boundaries
 
-- Public views (P01–P06 and C02's public preview) obtain creative data **only** through the public-profile projection, which returns an allow-listed set of fields (display name, practice, skills, broad area, creator-approved evidence, last updated, council inquiry route). Tests assert that private fields (name if not display name, contact/follow-up details, non-approved evidence, internal notes, review history, coordinator/site, references) never appear.
+- Public views (P01–P06 and C02's public preview) obtain creative data **only** through the public-profile projection, which returns an allow-listed set of fields (display name, domain, specific practice, skills, general location, creator-approved evidence, last updated, council inquiry route). Tests assert that private fields (name if not display name, contact/follow-up details, non-approved evidence, internal notes, review history, coordinator/site, references) never appear.
 - React escaping only; no `dangerouslySetInnerHTML`; no `eval`; no arbitrary URLs navigated.
 - No secrets, tokens, or environment variables are needed; none may be committed.
 - Fixture data is fictional adults only; no real names of private individuals, real partner sites, real providers, or council branding.

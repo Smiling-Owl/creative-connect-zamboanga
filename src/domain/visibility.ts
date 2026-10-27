@@ -9,6 +9,7 @@ import type { CreativeRecord, Ctx, DomainData, IntakeFields, Result } from './ty
 export function publicFingerprint(intake: IntakeFields): string {
   return JSON.stringify({
     displayName: intake.displayName,
+    domain: intake.domain,
     practice: intake.practice,
     skills: [...intake.skills],
     area: intake.area,

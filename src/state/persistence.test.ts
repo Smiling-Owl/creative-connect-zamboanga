@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { SCHEMA_VERSION, STORAGE_KEY, initialState, loadState, saveState } from './persistence';
 
+describe('schema version', () => {
+  it('uses version four for the required creative domain field', () => {
+    expect(SCHEMA_VERSION).toBe(4);
+  });
+});
+
 function memoryStorage(seed: Record<string, string> = {}): Storage {
   const map = new Map(Object.entries(seed));
   return {

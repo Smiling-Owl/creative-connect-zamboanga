@@ -18,6 +18,10 @@ Coordinator queue management, council review screens, profile maintenance, and t
 
 The form accepts text descriptions of work; no uploads, polished portfolio, business permit, or government ID are required. Public listing is a separate choice, initially off for a new application, and refusing it does not block support. A draft profile preview is not a public listing.
 
+Creative classification uses the nine domains in RA 11904 plus a free-text specific practice. The council's detailed sub-sector list is still pending. **General location** means a barangay, district, or general area; Area 1/2/3 are fictional demo locations, not creative categories or street addresses.
+
+The classification revision uses saved-state schema version 4. Older local demo data resets to the starting fictional data with a compatibility notice.
+
 ## Run locally
 
 Use Node.js 22.12 or later and npm.

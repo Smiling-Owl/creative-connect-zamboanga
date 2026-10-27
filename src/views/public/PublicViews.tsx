@@ -10,6 +10,7 @@ import { opportunityCapacity } from '../../domain/selectors';
 import { expressInterest } from '../../domain/referral';
 import { claimRecord } from '../../domain/account';
 import { saveDraft } from '../../domain/drafts';
+import { CREATIVE_DOMAINS } from '../../domain/taxonomy';
 import { demoTime, useDemo } from '../../state/store';
 
 const HELP_ROUTE = 'Coordinator contact route (placeholder — fictional demo sites only; confirm locally with the council).';
@@ -49,6 +50,7 @@ function Welcome() {
 function Directory() {
   const { state } = useDemo();
   const [query, setQuery] = useState('');
+  const [domain, setDomain] = useState('');
   const [practice, setPractice] = useState('');
   const [skill, setSkill] = useState('');
   const [area, setArea] = useState('');
@@ -56,16 +58,17 @@ function Directory() {
   const practices = [...new Set(all.map((p) => p.practice))].sort();
   const skills = [...new Set(all.flatMap((p) => p.skills))].sort();
   const areas = [...new Set(all.map((p) => p.area))].sort();
-  const filtered = searchDirectory(state.data, { query, practice, skill, area });
+  const filtered = searchDirectory(state.data, { query, domain, practice, skill, area });
   return <div className="public-stack">
     <section className="public-card"><h2>Search listed creatives</h2><div className="filter-grid">
-      <label className="field-inline">Search by name, practice, skill, or area<input value={query} onChange={(e) => setQuery(e.target.value)} /></label>
-      <label className="field-inline">Creative practice<select value={practice} onChange={(e) => setPractice(e.target.value)}><option value="">All practices</option>{practices.map((p) => <option key={p}>{p}</option>)}</select></label>
+      <label className="field-inline">Search by name, domain, practice, skill, or general location<input value={query} onChange={(e) => setQuery(e.target.value)} /></label>
+      <label className="field-inline">Creative domain<select value={domain} onChange={(e) => setDomain(e.target.value)}><option value="">All creative domains</option>{CREATIVE_DOMAINS.map((item) => <option key={item}>{item}</option>)}</select></label>
+      <label className="field-inline">Specific practice<select value={practice} onChange={(e) => setPractice(e.target.value)}><option value="">All specific practices</option>{practices.map((p) => <option key={p}>{p}</option>)}</select></label>
       <label className="field-inline">Skill<select value={skill} onChange={(e) => setSkill(e.target.value)}><option value="">All skills</option>{skills.map((item) => <option key={item}>{item}</option>)}</select></label>
-      <label className="field-inline">Broad area<select value={area} onChange={(e) => setArea(e.target.value)}><option value="">All areas</option>{areas.map((a) => <option key={a}>{a}</option>)}</select></label>
-      <Button variant="secondary" onClick={() => { setQuery(''); setPractice(''); setSkill(''); setArea(''); }}>Clear filters</Button>
+      <label className="field-inline">General location<select value={area} onChange={(e) => setArea(e.target.value)}><option value="">All locations</option>{areas.map((a) => <option key={a}>{a}</option>)}</select></label>
+      <Button variant="secondary" onClick={() => { setQuery(''); setDomain(''); setPractice(''); setSkill(''); setArea(''); }}>Clear filters</Button>
     </div><p role="status" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'creative' : 'creatives'} listed</p></section>
-    {filtered.length ? <ul className="card-list">{filtered.map((person) => <li className="public-card" key={person.id}><h2><Link to={`/directory/${person.id}`}>{person.displayName}</Link></h2><p>{person.practice} · {person.area}</p><p>{person.skills.join(' · ')}</p></li>)}</ul> : <section className="public-card"><h2>No listed creatives match</h2><p>Try a broader search or clear your filters.</p></section>}
+    {filtered.length ? <ul className="card-list">{filtered.map((person) => <li className="public-card" key={person.id}><h2><Link to={`/directory/${person.id}`}>{person.displayName}</Link></h2><p>{person.domain} · {person.practice} · {person.area}</p><p>{person.skills.join(' · ')}</p></li>)}</ul> : <section className="public-card"><h2>No listed creatives match</h2><p>Try a broader search or clear your filters.</p></section>}
   </div>;
 }
 

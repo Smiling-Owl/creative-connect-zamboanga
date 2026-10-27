@@ -8,6 +8,18 @@ import { DemoStoreProvider, useDemo } from './state/store';
 import { PublicView } from './views/public/PublicViews';
 import { IntakeView } from './views/intake/IntakeViews';
 
+const INTAKE_FOCUS_TARGETS: Record<string, string> = {
+  name: 'intake-name',
+  displayName: 'intake-display',
+  domain: 'intake-domain',
+  practice: 'intake-practice',
+  area: 'intake-area',
+  skills: 'intake-skills',
+  evidence: 'intake-evidence',
+  followUp: 'intake-followUp',
+  acknowledged: 'intake-acknowledged',
+};
+
 export function App() {
   return (
     <DemoStoreProvider>
@@ -30,6 +42,14 @@ function Layout() {
   const location = useLocation();
 
   useEffect(() => {
+    const requestedFocus = new URLSearchParams(location.search).get('focus');
+    const targetId = location.pathname === '/apply' ? INTAKE_FOCUS_TARGETS[requestedFocus ?? ''] : undefined;
+    const target = targetId ? document.getElementById(targetId) : null;
+    if (target instanceof HTMLElement) {
+      target.focus();
+      target.scrollIntoView({ block: 'nearest' });
+      return;
+    }
     document.querySelector<HTMLHeadingElement>('main h1')?.focus();
   }, [location.pathname, location.search]);
 

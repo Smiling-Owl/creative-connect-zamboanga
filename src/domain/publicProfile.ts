@@ -12,6 +12,7 @@ export interface PublicEvidence {
 export interface PublicProfile {
   id: string;
   displayName: string;
+  domain: string;
   practice: string;
   skills: string[];
   area: string;
@@ -24,6 +25,7 @@ export function projectPublicIntake(id: string, fields: IntakeFields, lastUpdate
   return {
     id,
     displayName: fields.displayName,
+    domain: fields.domain,
     practice: fields.practice,
     skills: [...fields.skills],
     area: fields.area,
@@ -51,6 +53,7 @@ export function publicDirectory(data: DomainData): PublicProfile[] {
 
 export interface DirectoryFilter {
   query?: string;
+  domain?: string;
   practice?: string;
   skill?: string;
   area?: string;
@@ -59,15 +62,17 @@ export interface DirectoryFilter {
 /** Search and filter over the public directory only. Matching is on public fields. */
 export function searchDirectory(data: DomainData, filter: DirectoryFilter): PublicProfile[] {
   const query = (filter.query ?? '').trim().toLowerCase();
+  const domain = (filter.domain ?? '').trim().toLowerCase();
   const practice = (filter.practice ?? '').trim().toLowerCase();
   const skill = (filter.skill ?? '').trim().toLowerCase();
   const area = (filter.area ?? '').trim().toLowerCase();
   return publicDirectory(data).filter((profile) => {
+    if (domain && profile.domain.toLowerCase() !== domain) return false;
     if (practice && profile.practice.toLowerCase() !== practice) return false;
     if (skill && !profile.skills.some((item) => item.toLowerCase() === skill)) return false;
     if (area && profile.area.toLowerCase() !== area) return false;
     if (!query) return true;
-    const haystack = [profile.displayName, profile.practice, profile.area, ...profile.skills].join(' ').toLowerCase();
+    const haystack = [profile.displayName, profile.domain, profile.practice, profile.area, ...profile.skills].join(' ').toLowerCase();
     return haystack.includes(query);
   });
 }

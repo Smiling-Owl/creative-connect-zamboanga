@@ -40,6 +40,7 @@ export interface EvidenceItem {
 export interface IntakeFields {
   name: string;
   displayName: string;
+  domain: string;
   practice: string;
   skills: string[];
   area: string;

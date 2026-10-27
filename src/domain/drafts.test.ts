@@ -7,6 +7,7 @@ function fieldsFor(displayName: string, followUp: IntakeFields['followUp']): Int
   return {
     name: displayName,
     displayName,
+    domain: 'Visual Arts',
     practice: 'Illustration',
     skills: ['Ink'],
     area: 'Area 2 (broad, fictional)',
