@@ -1,4 +1,4 @@
-# Creative Connect Zamboanga
+# JUNTO
 
 A browser-only clickable prototype for a proposed community-assisted creative onboarding, directory, and opportunity-referral service.
 

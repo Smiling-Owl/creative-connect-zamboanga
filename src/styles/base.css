@@ -225,17 +225,13 @@ a {
   color: var(--color-ink-muted);
 }
 
-/* Original sail mark (four corner triangles in App.tsx). Decorative: the wordmark text carries the name. */
-.sail-mark {
-  width: 1.4em;
-  height: 1.4em;
+/* JUNTO logo in the brand link. Fixed height (no layout shift); width follows the image's intrinsic ratio. */
+.brand-logo {
+  display: block;
   flex: none;
+  width: auto;
+  height: 36px;
 }
-
-.sail-orange { fill: var(--vinta-orange); }
-.sail-green { fill: var(--vinta-green); }
-.sail-yellow { fill: var(--vinta-yellow); }
-.sail-blue { fill: var(--vinta-blue); }
 
 .prototype-marker {
   order: 3;
@@ -398,6 +394,10 @@ a {
     display: inline-flex;
     width: auto;
     justify-self: start;
+  }
+
+  .brand-logo {
+    height: 44px;
   }
 
   .wordmark > span:not(.prototype-marker) {
@@ -1158,7 +1158,7 @@ legend {
 }
 
 /* Hero (P01): a dark rounded panel with a white display headline, a muted lead, a yellow primary and a white-outline secondary.
-   A layered sail composition sits on the right from 1024px and the vinta band runs along the bottom edge. */
+   The JUNTO logo sits on a white tile on the right from 1024px and the vinta band runs along the bottom edge. */
 .page-header:has(+ .public-stack > .welcome-panel) h1 {
   font-size: 1.25rem;
   font-weight: 700;
@@ -1188,7 +1188,7 @@ legend {
   background: var(--band-art) 0 0 / 576px 100% repeat-x;
 }
 
-.welcome-panel > :not(.hero-sail) {
+.welcome-panel > :not(.hero-logo) {
   position: relative;
 }
 
@@ -1248,7 +1248,7 @@ legend {
   background: rgb(255 255 255 / 12%);
 }
 
-.hero-sail {
+.hero-logo {
   display: none;
 }
 
@@ -1258,17 +1258,20 @@ legend {
     padding: var(--space-8) var(--space-8) calc(var(--space-8) + var(--band-footer));
   }
 
-  .welcome-panel > :not(.hero-sail) {
+  .welcome-panel > :not(.hero-logo) {
     max-width: 38rem;
   }
 
-  .hero-sail {
+  .hero-logo {
     display: block;
     position: absolute;
     right: 48px;
     top: 50%;
-    width: 360px;
-    height: 360px;
+    width: 260px;
+    height: auto;
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
     transform: translateY(-50%);
   }
 }

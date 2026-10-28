@@ -10,7 +10,7 @@ A calm, trustworthy public service that helps people, not a marketing site or a 
 
 **Vinta theme — user-directed revision, 2026-10-28.** The team supplied a Zamboanga vinta-sail palette and asked for a modern, simple, low-bandwidth look drawn from the design philosophy of sites such as Apple, GOV.UK, Linear, and Stripe. This replaces the earlier "no official colors / no cultural motifs" rule for colour and motif only.
 
-- Working identity stays a text wordmark **Creative Connect Zamboanga** with the subtitle "Proposed service concept for the Zamboanga City Creative Council — not an official council site". The palette is used; the supplied council logo, seal, name lockup, and pattern artwork are **not** reproduced. The sail mark beside the wordmark is an original geometric CSS/inline-SVG shape.
+- Identity is now the **JUNTO** logo supplied by the project owner (`public/junto-logo*.png`, with a tagline in the logo artwork), shown with a **JUNTO** text wordmark beside it in the header. The subtitle "Proposed service concept for the Zamboanga City Creative Council — not an official council site" is unchanged. The favicon is `public/favicon.webp`. The earlier council logo, seal, name lockup, and pattern artwork were never reproduced.
 - Philosophy (principles only; no layout, assets, or trade dress copied):
   - **Deference and restraint (Apple):** content first, generous whitespace, one idea per section, colour mostly in small signature details, not chrome.
   - **Plain, robust service design (GOV.UK):** mobile-first single column, readable line length, no restyling of status meaning, works on slow connections and older devices.

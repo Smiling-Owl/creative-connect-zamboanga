@@ -32,17 +32,10 @@ export function PublicView({ id }: { id: string }) {
 function Welcome() {
   return <div className="public-stack">
     <section className="welcome-panel">
-      <svg className="hero-sail" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
-        <path className="sail-blue" d="M24 190V24l126 166z" />
-        <path className="sail-orange" d="M70 190V70l100 120z" />
-        <path className="sail-yellow" d="M112 190v-82l72 82z" />
-        <path className="sail-green" d="M46 190v-58l50 58z" />
-        <path className="sail-blue" d="M140 190v-40l38 40z" />
-        <path className="sail-orange" d="M8 190v-30l32 30z" />
-      </svg>
+      <img className="hero-logo" src="./junto-logo-512.png" alt="" width={260} height={173} decoding="async" />
       <p className="eyebrow">A proposed service concept · fictional demo</p>
       <h2>Make your creative practice easier for the council to find.</h2>
-      <p>Creative Connect helps adult creatives record their practice and hear about council support. You can register on your own or sit with a coordinator at a fictional barangay or school site.</p>
+      <p>JUNTO helps adult creatives record their practice and hear about council support. You can register on your own or sit with a coordinator at a fictional barangay or school site.</p>
       <div className="action-row"><Link className="btn btn-primary" to="/access?mode=signup">Start registration</Link><Link className="btn btn-secondary" to="/access?mode=help">Get help registering</Link></div>
     </section>
     <section className="public-grid" aria-label="Explore the service">

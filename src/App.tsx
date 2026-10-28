@@ -90,13 +90,9 @@ function Layout() {
       <header className="site-header" ref={header}>
         <div className="wordmark">
           <a href="#/">
-            <svg className="sail-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-              <path className="sail-orange" d="M0 0H16V16Z" />
-              <path className="sail-green" d="M32 0V16L16 0Z" />
-              <path className="sail-yellow" d="M32 32H16V16Z" />
-              <path className="sail-blue" d="M0 32V16L16 32Z" />
-            </svg>
-            Creative Connect Zamboanga
+            <img className="brand-logo" src="./junto-logo-512.png" alt="JUNTO" width={54} height={36} decoding="async" />
+            {/* Visible wordmark. Hidden from assistive tech so the link's name is the img alt, not "JUNTO JUNTO". */}
+            <span className="brand-name" aria-hidden="true">JUNTO</span>
           </a>
           <span>Proposed service concept for the Zamboanga City Creative Council — not an official council site</span>
           <span className="prototype-marker">Prototype · fictional data</span>
@@ -158,7 +154,7 @@ function Layout() {
 function ViewPage({ view }: { view: ViewDef }) {
   const { actor, state } = useDemo();
   useEffect(() => {
-    document.title = `${view.title} — Creative Connect Zamboanga (prototype)`;
+    document.title = `${view.title} — JUNTO (prototype)`;
   }, [view.title]);
 
   if (!canOpen(view, actor.role)) {

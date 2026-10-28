@@ -1,4 +1,4 @@
-# Creative Connect Zamboanga — demonstration script
+# JUNTO — demonstration script
 
 This is a browser-only concept prototype. Every person, site, provider, contact route, opportunity, and outcome is fictional. Sign-in, codes, connectivity, device queues, council decisions, invitations, and notifications are simulated in one browser. It is not an official council service, a business permit, a certification, or a promise of work. Nothing is sent to anyone.
 
